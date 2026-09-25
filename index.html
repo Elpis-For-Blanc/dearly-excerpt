@@ -29,16 +29,11 @@
     }
 
     .app {
-      display: grid;
-      grid-template-columns: 1fr;
-      grid-template-areas:
-        "preview"
-        "sidebar";
       min-height: 100vh;
+      padding-top: 18px;
     }
 
     .sidebar {
-      grid-area: sidebar;
       width: min(100%, 980px);
       margin: 0 auto;
       background: rgba(255,255,255,0.92);
@@ -199,7 +194,6 @@
     }
 
     .preview-wrap {
-      grid-area: preview;
       width: 100%;
       padding: 18px 18px 8px;
     }
@@ -457,6 +451,34 @@
       <div class="brand">
         <h1>Dearly Excerpt</h1>
         <p>원하는 문장만 넣어 꾸미고 이미지로 저장하는 발췌 메이커. 입력한 데이터는 기본적으로 현재 브라우저에만 저장됨.</p>
+      </div>
+
+      <div class="preview-wrap" aria-label="발췌 미리보기">
+        <div class="preview-stage">
+          <div class="excerpt-card" id="exportTarget">
+            <div class="card-bg-layer" id="cardBg"></div>
+            <div class="card-overlay-layer" id="cardOverlay"></div>
+            <div class="card-content-box" id="contentBox"></div>
+            <div class="card-inner" id="cardInner">
+              <div class="card-layout no-side-image" id="cardLayout">
+                <div class="side-image-frame hidden" id="sideImageFrame">
+                  <img id="sideImagePreview" alt="발췌 이미지">
+                </div>
+                <div class="card-text-panel" id="cardTextPanel">
+                  <div class="card-text-content" id="cardTextContent">
+                    <div class="card-top">
+                      <div class="eyebrow" id="eyebrow"></div>
+                      <h2 class="card-title" id="cardTitle"></h2>
+                      <div class="card-memo" id="cardMemo"></div>
+                    </div>
+                    <div class="excerpt-content" id="excerptContent"></div>
+                    <div class="footer-note" id="footerNote"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <section class="section">
@@ -723,33 +745,6 @@
       </section>
     </aside>
 
-    <main class="preview-wrap">
-      <div class="preview-stage">
-        <div class="excerpt-card" id="exportTarget">
-          <div class="card-bg-layer" id="cardBg"></div>
-          <div class="card-overlay-layer" id="cardOverlay"></div>
-          <div class="card-content-box" id="contentBox"></div>
-          <div class="card-inner" id="cardInner">
-            <div class="card-layout no-side-image" id="cardLayout">
-              <div class="side-image-frame hidden" id="sideImageFrame">
-                <img id="sideImagePreview" alt="발췌 이미지">
-              </div>
-              <div class="card-text-panel" id="cardTextPanel">
-                <div class="card-text-content" id="cardTextContent">
-                  <div class="card-top">
-                    <div class="eyebrow" id="eyebrow"></div>
-                    <h2 class="card-title" id="cardTitle"></h2>
-                    <div class="card-memo" id="cardMemo"></div>
-                  </div>
-                  <div class="excerpt-content" id="excerptContent"></div>
-                  <div class="footer-note" id="footerNote"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
   </div>
 
   <script>
