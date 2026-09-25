@@ -602,23 +602,21 @@
           <div>
             <label for="presetSelect">테마</label>
             <select id="presetSelect">
-              <optgroup label="Pastel">
-                <option value="princess">Strawberry Pink</option>
+              <optgroup label="Original">
+                <option value="princess">Princess</option>
+                <option value="novel">Novel</option>
+                <option value="letter">Letter</option>
+                <option value="minimal">Minimal</option>
+                <option value="dark">Dark</option>
+                <option value="diary">Diary</option>
+              </optgroup>
+              <optgroup label="Color Themes">
                 <option value="sky">Powder Sky</option>
                 <option value="lavender">Lavender Milk</option>
                 <option value="mint">Mint Cream</option>
                 <option value="peach">Peach Blossom</option>
                 <option value="butter">Butter Cream</option>
-              </optgroup>
-              <optgroup label="Calm">
-                <option value="novel">Classic Ivory</option>
-                <option value="letter">Rose Letter</option>
                 <option value="bluegray">Blue Gray</option>
-                <option value="minimal">Pure White</option>
-              </optgroup>
-              <optgroup label="Mood">
-                <option value="diary">Pink Diary</option>
-                <option value="dark">Midnight</option>
               </optgroup>
             </select>
           </div>
@@ -762,7 +760,30 @@
       </section>
 
       <section class="section">
-        <h2>7. 출력 / 저장</h2>
+        <h2>7. 디자인 · 배경 프리셋</h2>
+        <p class="desc">현재 디자인과 배경만 따로 저장해두고 다른 발췌에 그대로 적용할 수 있음. 발췌문, 카드 정보, 화자, 발췌 이미지는 저장되지 않음.</p>
+        <div style="margin-top:4px;">
+          <label for="stylePresetName">프리셋 이름</label>
+          <input id="stylePresetName" type="text" maxlength="40" placeholder="예: 핑크 레이스 / 밤하늘 / 하늘색">
+        </div>
+        <div class="btn-row">
+          <button type="button" id="saveStylePresetBtn">현재 설정 저장</button>
+        </div>
+        <div style="margin-top:12px;">
+          <label for="savedStylePresetSelect">저장된 프리셋</label>
+          <select id="savedStylePresetSelect">
+            <option value="">저장된 프리셋 선택</option>
+          </select>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="secondary" id="loadStylePresetBtn">불러오기</button>
+          <button type="button" class="secondary" id="deleteStylePresetBtn">삭제</button>
+        </div>
+        <div class="notice" style="margin-top:10px;">배경 이미지와 사용자 업로드 폰트를 사용 중이면 프리셋 데이터에 함께 저장됨. 큰 파일은 브라우저 저장 공간을 많이 사용할 수 있음.</div>
+      </section>
+
+      <section class="section">
+        <h2>8. 출력 / 저장</h2>
         <div class="grid2">
           <div>
             <label for="sizePreset">세로 카드 비율</label>
@@ -814,7 +835,7 @@
       </section>
 
       <section class="section">
-        <h2>8. 백업 / 복원</h2>
+        <h2>9. 백업 / 복원</h2>
         <p class="desc">브라우저 데이터가 지워질 수 있으니 배포판에서는 주기적으로 JSON 백업을 권장함.</p>
         <div class="btn-row">
           <button type="button" class="secondary" id="backupExportBtn">JSON 내보내기</button>
@@ -826,7 +847,7 @@
       </section>
 
       <section class="section">
-        <h2>9. 저장된 발췌</h2>
+        <h2>10. 저장된 발췌</h2>
         <div style="margin-bottom:10px;"><label for="librarySearch">검색</label><input id="librarySearch" type="text" placeholder="제목, 본문, 태그, 시리즈명으로 검색"></div>
         <div id="libraryList"></div>
       </section>
@@ -836,6 +857,7 @@
 
   <script>
     const STORAGE_KEY = 'dearly_excerpt_library_v1';
+    const STYLE_PRESET_KEY = 'dearly_excerpt_style_presets_v1';
     const DEFAULT_SPEAKERS = [];
 
     const state = {
@@ -861,6 +883,7 @@
       bgType: $('bgType'), contentBoxMode: $('contentBoxMode'), bgColor1: $('bgColor1'), bgColor2: $('bgColor2'), bgImageInput: $('bgImageInput'),
       bgFit: $('bgFit'), bgPos: $('bgPos'), bgScale: $('bgScale'), bgOpacity: $('bgOpacity'), bgBlur: $('bgBlur'), bgBrightness: $('bgBrightness'),
       overlayColor: $('overlayColor'), overlayOpacity: $('overlayOpacity'), bgImageControls: $('bgImageControls'),
+      stylePresetName: $('stylePresetName'), savedStylePresetSelect: $('savedStylePresetSelect'), saveStylePresetBtn: $('saveStylePresetBtn'), loadStylePresetBtn: $('loadStylePresetBtn'), deleteStylePresetBtn: $('deleteStylePresetBtn'),
       sizePreset: $('sizePreset'), autoFitText: $('autoFitText'), minAutoFontSize: $('minAutoFontSize'), autoGrowLimit: $('autoGrowLimit'), fitNote: $('fitNote'), watermarkInput: $('watermarkInput'), exportScale: $('exportScale'), saveBtn: $('saveBtn'), exportBtn: $('exportBtn'), newBtn: $('newBtn'), statusText: $('statusText'),
       backupExportBtn: $('backupExportBtn'), backupImportInput: $('backupImportInput'), clearLibraryBtn: $('clearLibraryBtn'), librarySearch: $('librarySearch'),
       exportTarget: $('exportTarget'), cardBg: $('cardBg'), cardOverlay: $('cardOverlay'), contentBox: $('contentBox'), cardInner: $('cardInner'),
@@ -880,6 +903,7 @@
       applyPreset();
       updateBgControlsVisibility();
       render();
+      renderStylePresetList();
       renderLibrary();
       setStatus('준비 완료');
     }
@@ -919,6 +943,13 @@
       refs.addSpeakerBtn.addEventListener('click', addSpeaker);
       refs.resetSpeakersBtn.addEventListener('click', () => resetSpeakers());
       refs.creatorPresetBtn.addEventListener('click', applyCreatorPreset);
+      refs.saveStylePresetBtn.addEventListener('click', saveStylePreset);
+      refs.loadStylePresetBtn.addEventListener('click', loadSelectedStylePreset);
+      refs.deleteStylePresetBtn.addEventListener('click', deleteSelectedStylePreset);
+      refs.savedStylePresetSelect.addEventListener('change', () => {
+        const item = getStylePresets().find(v => v.id === refs.savedStylePresetSelect.value);
+        if (item) refs.stylePresetName.value = item.name;
+      });
       refs.saveBtn.addEventListener('click', saveCurrentEntry);
       refs.exportBtn.addEventListener('click', exportPng);
       refs.newBtn.addEventListener('click', clearForm);
@@ -1101,6 +1132,161 @@
         setStatus(`배경 이미지를 첨부했어. (${file.name})`);
       };
       reader.readAsDataURL(file);
+    }
+
+    function getStylePresets() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STYLE_PRESET_KEY) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function renderStylePresetList(selectedId = '') {
+      if (!refs.savedStylePresetSelect) return;
+      const presets = getStylePresets();
+      refs.savedStylePresetSelect.innerHTML = '<option value="">저장된 프리셋 선택</option>';
+      presets
+        .slice()
+        .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ko'))
+        .forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = item.name || '이름 없는 프리셋';
+          refs.savedStylePresetSelect.appendChild(option);
+        });
+      if (selectedId && presets.some(v => v.id === selectedId)) refs.savedStylePresetSelect.value = selectedId;
+    }
+
+    function collectStylePresetData() {
+      return {
+        preset: refs.presetSelect.value,
+        font: refs.fontSelect.value,
+        customFontData: state.customFontData || '',
+        customFontName: state.customFontName || '',
+        baseFontSize: refs.baseFontSize.value,
+        lineHeight: refs.lineHeight.value,
+        cardRadius: refs.cardRadius.value,
+        cardPadding: refs.cardPadding.value,
+        bodyColor: refs.bodyColor.value,
+        accentColor: refs.accentColor.value,
+        bgType: refs.bgType.value,
+        contentBoxMode: refs.contentBoxMode.value,
+        bgColor1: refs.bgColor1.value,
+        bgColor2: refs.bgColor2.value,
+        bgImageData: state.bgImageData || '',
+        bgFit: refs.bgFit.value,
+        bgPos: refs.bgPos.value,
+        bgScale: refs.bgScale.value,
+        bgOpacity: refs.bgOpacity.value,
+        bgBlur: refs.bgBlur.value,
+        bgBrightness: refs.bgBrightness.value,
+        overlayColor: refs.overlayColor.value,
+        overlayOpacity: refs.overlayOpacity.value,
+      };
+    }
+
+    function saveStylePreset() {
+      const name = refs.stylePresetName.value.trim();
+      if (!name) {
+        setStatus('저장할 디자인 프리셋 이름을 입력해줘.');
+        refs.stylePresetName.focus();
+        return;
+      }
+      const presets = getStylePresets();
+      const existing = presets.find(v => (v.name || '').toLocaleLowerCase() === name.toLocaleLowerCase());
+      if (existing && !confirm(`"${name}" 프리셋을 현재 설정으로 덮어쓸까?`)) return;
+      const item = {
+        id: existing?.id || makeId(),
+        name,
+        data: collectStylePresetData(),
+        savedAt: new Date().toISOString(),
+      };
+      const next = existing ? presets.map(v => v.id === existing.id ? item : v) : [item, ...presets];
+      try {
+        localStorage.setItem(STYLE_PRESET_KEY, JSON.stringify(next));
+        renderStylePresetList(item.id);
+        setStatus(`디자인 · 배경 프리셋 "${name}"을 저장했어.`);
+      } catch (err) {
+        console.error(err);
+        setStatus('프리셋을 저장하지 못했어. 배경 이미지나 폰트 파일이 크면 브라우저 저장 공간이 부족할 수 있어.');
+      }
+    }
+
+    async function applyStylePresetData(data) {
+      if (!data) return;
+      if (data.preset && [...refs.presetSelect.options].some(opt => opt.value === data.preset)) refs.presetSelect.value = data.preset;
+
+      if (data.customFontData) {
+        await applyCustomFont(data.customFontData, data.customFontName || '사용자 폰트');
+      } else {
+        await applyCustomFont('');
+      }
+      if (data.font) refs.fontSelect.value = data.font;
+
+      const values = {
+        baseFontSize: data.baseFontSize,
+        lineHeight: data.lineHeight,
+        cardRadius: data.cardRadius,
+        cardPadding: data.cardPadding,
+        bodyColor: data.bodyColor,
+        accentColor: data.accentColor,
+        bgType: data.bgType,
+        contentBoxMode: data.contentBoxMode,
+        bgColor1: data.bgColor1,
+        bgColor2: data.bgColor2,
+        bgFit: data.bgFit,
+        bgPos: data.bgPos,
+        bgScale: data.bgScale,
+        bgOpacity: data.bgOpacity,
+        bgBlur: data.bgBlur,
+        bgBrightness: data.bgBrightness,
+        overlayColor: data.overlayColor,
+        overlayOpacity: data.overlayOpacity,
+      };
+      Object.entries(values).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && refs[key]) refs[key].value = value;
+      });
+      state.bgImageData = data.bgImageData || '';
+      refs.bgImageInput.value = '';
+
+      ['baseFontSize','lineHeight','cardRadius','cardPadding','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
+      updateBgControlsVisibility();
+      render();
+    }
+
+    async function loadSelectedStylePreset() {
+      const id = refs.savedStylePresetSelect.value;
+      if (!id) {
+        setStatus('불러올 디자인 프리셋을 선택해줘.');
+        return;
+      }
+      const item = getStylePresets().find(v => v.id === id);
+      if (!item) {
+        renderStylePresetList();
+        setStatus('선택한 프리셋을 찾을 수 없어.');
+        return;
+      }
+      await applyStylePresetData(item.data);
+      refs.stylePresetName.value = item.name;
+      setStatus(`디자인 · 배경 프리셋 "${item.name}"을 불러왔어.`);
+    }
+
+    function deleteSelectedStylePreset() {
+      const id = refs.savedStylePresetSelect.value;
+      if (!id) {
+        setStatus('삭제할 디자인 프리셋을 선택해줘.');
+        return;
+      }
+      const presets = getStylePresets();
+      const item = presets.find(v => v.id === id);
+      if (!item) return;
+      if (!confirm(`"${item.name}" 프리셋을 삭제할까?`)) return;
+      localStorage.setItem(STYLE_PRESET_KEY, JSON.stringify(presets.filter(v => v.id !== id)));
+      refs.stylePresetName.value = '';
+      renderStylePresetList();
+      setStatus(`디자인 · 배경 프리셋 "${item.name}"을 삭제했어.`);
     }
 
     function applyPreset() {
@@ -1722,9 +1908,10 @@
     function exportBackup() {
       const payload = {
         app: 'Dearly Excerpt',
-        version: 4,
+        version: 5,
         exportedAt: new Date().toISOString(),
         entries: getLibrary(),
+        stylePresets: getStylePresets(),
       };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -1747,9 +1934,14 @@
           const entries = Array.isArray(parsed) ? parsed : parsed.entries;
           if (!Array.isArray(entries)) throw new Error('invalid backup');
           localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+          if (!Array.isArray(parsed) && Array.isArray(parsed.stylePresets)) {
+            localStorage.setItem(STYLE_PRESET_KEY, JSON.stringify(parsed.stylePresets));
+          }
           state.editingId = null;
+          renderStylePresetList();
           renderLibrary();
-          setStatus(`${entries.length}개의 발췌를 복원했어.`);
+          const presetCount = (!Array.isArray(parsed) && Array.isArray(parsed.stylePresets)) ? parsed.stylePresets.length : 0;
+          setStatus(`${entries.length}개의 발췌${presetCount ? `와 ${presetCount}개의 디자인 프리셋` : ''}을 복원했어.`);
         } catch (err) {
           console.error(err);
           setStatus('가져올 수 없는 JSON 파일이야. Dearly Excerpt 백업 파일인지 확인해줘.');
