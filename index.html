@@ -30,15 +30,21 @@
 
     .app {
       display: grid;
-      grid-template-columns: minmax(340px, 430px) 1fr;
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "preview"
+        "sidebar";
       min-height: 100vh;
     }
 
     .sidebar {
+      grid-area: sidebar;
+      width: min(100%, 980px);
+      margin: 0 auto;
       background: rgba(255,255,255,0.92);
-      border-right: 1px solid #f4dbe6;
-      overflow-y: auto;
-      padding: 24px 20px 40px;
+      border: 1px solid #f4dbe6;
+      border-radius: 28px 28px 0 0;
+      padding: 20px 20px 40px;
       backdrop-filter: blur(10px);
     }
 
@@ -105,7 +111,7 @@
       font-size: 13px;
       outline: none;
     }
-    input[type="range"] {
+    input[type="number"] {
       width: 100%;
     }
     textarea {
@@ -193,15 +199,18 @@
     }
 
     .preview-wrap {
-      overflow: auto;
-      padding: 24px;
+      grid-area: preview;
+      width: 100%;
+      padding: 18px 18px 8px;
     }
     .preview-stage {
-      min-height: calc(100vh - 48px);
+      width: min(100%, 980px);
+      margin: 0 auto;
+      min-height: 0;
       border-radius: 28px;
       background: rgba(255,255,255,0.45);
       border: 1px dashed rgba(234, 192, 210, 0.8);
-      padding: 28px;
+      padding: 18px;
       display: flex;
       justify-content: center;
       align-items: flex-start;
@@ -284,6 +293,11 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+    }
+    .card-text-content {
+      width: 100%;
+      transform-origin: top left;
+      flex: 0 0 auto;
     }
 
     .card-top {
@@ -428,10 +442,12 @@
 
     .hidden { display: none !important; }
 
-    @media (max-width: 1120px) {
-      .app { grid-template-columns: 1fr; }
-      .sidebar { border-right: 0; border-bottom: 1px solid #f4dbe6; }
-      .preview-stage { min-height: auto; }
+    @media (max-width: 700px) {
+      .preview-wrap { padding: 10px 10px 6px; }
+      .preview-stage { padding: 10px; border-radius: 20px; }
+      .sidebar { width: 100%; border-left: 0; border-right: 0; border-radius: 22px 22px 0 0; padding: 14px 12px 32px; }
+      .grid2, .grid3 { grid-template-columns: 1fr; }
+      .grid3 > [style*="grid-column"] { grid-column: auto !important; }
     }
   </style>
 </head>
@@ -519,12 +535,12 @@
           <p class="desc" id="customFontStatus" style="margin:6px 0 0;">TTF · OTF · WOFF · WOFF2 지원. 업로드한 폰트는 현재 발췌 저장 데이터에 포함할 수 있음.</p>
         </div>
         <div class="grid2" style="margin-top:10px;">
-          <div><label for="baseFontSize">본문 글자 크기 <span id="baseFontSizeVal">18</span>px</label><input id="baseFontSize" type="range" min="14" max="28" value="18"></div>
-          <div><label for="lineHeight">줄간격 <span id="lineHeightVal">1.8</span></label><input id="lineHeight" type="range" min="1.3" max="2.4" step="0.1" value="1.8"></div>
+          <div><label for="baseFontSize">본문 글자 크기 <span id="baseFontSizeVal">18</span>px</label><input id="baseFontSize" type="number" inputmode="decimal" min="14" max="28" value="18"></div>
+          <div><label for="lineHeight">줄간격 <span id="lineHeightVal">1.8</span></label><input id="lineHeight" type="number" inputmode="decimal" min="1.3" max="2.4" step="0.1" value="1.8"></div>
         </div>
         <div class="grid2" style="margin-top:10px;">
-          <div><label for="cardRadius">모서리 <span id="cardRadiusVal">28</span>px</label><input id="cardRadius" type="range" min="0" max="40" value="28"></div>
-          <div><label for="cardPadding">안쪽 여백 <span id="cardPaddingVal">34</span>px</label><input id="cardPadding" type="range" min="18" max="64" value="34"></div>
+          <div><label for="cardRadius">모서리 <span id="cardRadiusVal">28</span>px</label><input id="cardRadius" type="number" inputmode="decimal" min="0" max="40" value="28"></div>
+          <div><label for="cardPadding">안쪽 여백 <span id="cardPaddingVal">34</span>px</label><input id="cardPadding" type="number" inputmode="decimal" min="18" max="64" value="34"></div>
         </div>
         <div class="grid2" style="margin-top:10px;">
           <div><label for="bodyColor">본문색</label><input id="bodyColor" type="color" value="#3e3038" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff; padding:4px;"></div>
@@ -558,19 +574,19 @@
           </div>
         </div>
         <div class="grid2" style="margin-top:10px;">
-          <div><label for="sideImageWidth">이미지 넓이 <span id="sideImageWidthVal">220</span>px</label><input id="sideImageWidth" type="range" min="80" max="560" value="220"></div>
-          <div><label for="sideImageHeight">이미지 높이 <span id="sideImageHeightVal">360</span>px</label><input id="sideImageHeight" type="range" min="80" max="900" value="360"></div>
+          <div><label for="sideImageWidth">이미지 넓이 <span id="sideImageWidthVal">220</span>px</label><input id="sideImageWidth" type="number" inputmode="decimal" min="80" max="560" value="220"></div>
+          <div><label for="sideImageHeight">이미지 높이 <span id="sideImageHeightVal">360</span>px</label><input id="sideImageHeight" type="number" inputmode="decimal" min="80" max="900" value="360"></div>
         </div>
         <div class="grid2" style="margin-top:10px;">
-          <div><label for="sideImageZoom">이미지 확대 <span id="sideImageZoomVal">100</span>%</label><input id="sideImageZoom" type="range" min="50" max="300" value="100"></div>
-          <div><label for="sideImageRadius">모서리 <span id="sideImageRadiusVal">18</span>px</label><input id="sideImageRadius" type="range" min="0" max="60" value="18"></div>
+          <div><label for="sideImageZoom">이미지 확대 <span id="sideImageZoomVal">100</span>%</label><input id="sideImageZoom" type="number" inputmode="decimal" min="50" max="300" value="100"></div>
+          <div><label for="sideImageRadius">모서리 <span id="sideImageRadiusVal">18</span>px</label><input id="sideImageRadius" type="number" inputmode="decimal" min="0" max="60" value="18"></div>
         </div>
         <div class="grid2" style="margin-top:10px;">
-          <div><label for="sideImagePosX">가로 위치 <span id="sideImagePosXVal">50</span>%</label><input id="sideImagePosX" type="range" min="0" max="100" value="50"></div>
-          <div><label for="sideImagePosY">세로 위치 <span id="sideImagePosYVal">50</span>%</label><input id="sideImagePosY" type="range" min="0" max="100" value="50"></div>
+          <div><label for="sideImagePosX">가로 위치 <span id="sideImagePosXVal">50</span>%</label><input id="sideImagePosX" type="number" inputmode="decimal" min="0" max="100" value="50"></div>
+          <div><label for="sideImagePosY">세로 위치 <span id="sideImagePosYVal">50</span>%</label><input id="sideImagePosY" type="number" inputmode="decimal" min="0" max="100" value="50"></div>
         </div>
         <div class="grid2" style="margin-top:10px;">
-          <div><label for="sideImageGap">본문과 간격 <span id="sideImageGapVal">22</span>px</label><input id="sideImageGap" type="range" min="0" max="60" value="22"></div>
+          <div><label for="sideImageGap">본문과 간격 <span id="sideImageGapVal">22</span>px</label><input id="sideImageGap" type="number" inputmode="decimal" min="0" max="60" value="22"></div>
           <div style="display:flex;align-items:end;"><button type="button" class="secondary" id="removeSideImageBtn" style="width:100%;">이미지 제거</button></div>
         </div>
       </section>
@@ -622,17 +638,17 @@
             </div>
           </div>
           <div class="grid2" style="margin-top:10px;">
-            <div><label for="bgScale">이미지 확대 <span id="bgScaleVal">100</span>%</label><input id="bgScale" type="range" min="50" max="180" value="100"></div>
-            <div><label for="bgOpacity">이미지 투명도 <span id="bgOpacityVal">100</span>%</label><input id="bgOpacity" type="range" min="10" max="100" value="100"></div>
+            <div><label for="bgScale">이미지 확대 <span id="bgScaleVal">100</span>%</label><input id="bgScale" type="number" inputmode="decimal" min="50" max="180" value="100"></div>
+            <div><label for="bgOpacity">이미지 투명도 <span id="bgOpacityVal">100</span>%</label><input id="bgOpacity" type="number" inputmode="decimal" min="10" max="100" value="100"></div>
           </div>
           <div class="grid2" style="margin-top:10px;">
-            <div><label for="bgBlur">블러 <span id="bgBlurVal">0</span>px</label><input id="bgBlur" type="range" min="0" max="20" value="0"></div>
-            <div><label for="bgBrightness">밝기 <span id="bgBrightnessVal">100</span>%</label><input id="bgBrightness" type="range" min="40" max="160" value="100"></div>
+            <div><label for="bgBlur">블러 <span id="bgBlurVal">0</span>px</label><input id="bgBlur" type="number" inputmode="decimal" min="0" max="20" value="0"></div>
+            <div><label for="bgBrightness">밝기 <span id="bgBrightnessVal">100</span>%</label><input id="bgBrightness" type="number" inputmode="decimal" min="40" max="160" value="100"></div>
           </div>
         </div>
         <div class="grid2" style="margin-top:10px;">
           <div><label for="overlayColor">오버레이 색</label><input id="overlayColor" type="color" value="#ffffff" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff; padding:4px;"></div>
-          <div><label for="overlayOpacity">오버레이 <span id="overlayOpacityVal">0</span>%</label><input id="overlayOpacity" type="range" min="0" max="90" value="0"></div>
+          <div><label for="overlayOpacity">오버레이 <span id="overlayOpacityVal">0</span>%</label><input id="overlayOpacity" type="number" inputmode="decimal" min="0" max="90" value="0"></div>
         </div>
       </section>
 
@@ -659,11 +675,19 @@
             </div>
           </div>
           <div>
-            <label for="minAutoFontSize">최소 글자 크기 <span id="minAutoFontSizeVal">9</span>px</label>
-            <input id="minAutoFontSize" type="range" min="8" max="16" value="9">
+            <label for="minAutoFontSize">최소 글자 크기 <span id="minAutoFontSizeVal">5</span>px</label>
+            <input id="minAutoFontSize" type="number" min="3" max="16" step="0.5" value="5" inputmode="decimal">
           </div>
         </div>
-        <div class="fit-note" id="fitNote">4:5 세로 카드 한 장에 맞춰 표시돼.</div>
+        <div style="margin-top:10px;">
+          <label for="autoGrowLimit">카드 자동 확장 최대</label>
+          <select id="autoGrowLimit">
+            <option value="1.15">조금 · 기본 높이보다 최대 15% 길게</option>
+            <option value="1.30" selected>보통 · 기본 높이보다 최대 30% 길게</option>
+            <option value="1.45">넉넉하게 · 기본 높이보다 최대 45% 길게</option>
+          </select>
+        </div>
+        <div class="fit-note" id="fitNote">카드는 필요한 만큼 조금 늘어난 뒤, 너무 길어지기 전에 본문을 자동 조절해.</div>
         <div style="margin-top:10px;">
           <label for="exportScale">PNG 화질</label>
           <select id="exportScale">
@@ -711,13 +735,15 @@
                 <img id="sideImagePreview" alt="발췌 이미지">
               </div>
               <div class="card-text-panel" id="cardTextPanel">
-                <div class="card-top">
-                  <div class="eyebrow" id="eyebrow"></div>
-                  <h2 class="card-title" id="cardTitle"></h2>
-                  <div class="card-memo" id="cardMemo"></div>
+                <div class="card-text-content" id="cardTextContent">
+                  <div class="card-top">
+                    <div class="eyebrow" id="eyebrow"></div>
+                    <h2 class="card-title" id="cardTitle"></h2>
+                    <div class="card-memo" id="cardMemo"></div>
+                  </div>
+                  <div class="excerpt-content" id="excerptContent"></div>
+                  <div class="footer-note" id="footerNote"></div>
                 </div>
-                <div class="excerpt-content" id="excerptContent"></div>
-                <div class="footer-note" id="footerNote"></div>
               </div>
             </div>
           </div>
@@ -753,12 +779,18 @@
       bgType: $('bgType'), contentBoxMode: $('contentBoxMode'), bgColor1: $('bgColor1'), bgColor2: $('bgColor2'), bgImageInput: $('bgImageInput'),
       bgFit: $('bgFit'), bgPos: $('bgPos'), bgScale: $('bgScale'), bgOpacity: $('bgOpacity'), bgBlur: $('bgBlur'), bgBrightness: $('bgBrightness'),
       overlayColor: $('overlayColor'), overlayOpacity: $('overlayOpacity'), bgImageControls: $('bgImageControls'),
-      sizePreset: $('sizePreset'), autoFitText: $('autoFitText'), minAutoFontSize: $('minAutoFontSize'), fitNote: $('fitNote'), watermarkInput: $('watermarkInput'), exportScale: $('exportScale'), saveBtn: $('saveBtn'), exportBtn: $('exportBtn'), newBtn: $('newBtn'), statusText: $('statusText'),
+      sizePreset: $('sizePreset'), autoFitText: $('autoFitText'), minAutoFontSize: $('minAutoFontSize'), autoGrowLimit: $('autoGrowLimit'), fitNote: $('fitNote'), watermarkInput: $('watermarkInput'), exportScale: $('exportScale'), saveBtn: $('saveBtn'), exportBtn: $('exportBtn'), newBtn: $('newBtn'), statusText: $('statusText'),
       backupExportBtn: $('backupExportBtn'), backupImportInput: $('backupImportInput'), clearLibraryBtn: $('clearLibraryBtn'), librarySearch: $('librarySearch'),
       exportTarget: $('exportTarget'), cardBg: $('cardBg'), cardOverlay: $('cardOverlay'), contentBox: $('contentBox'), cardInner: $('cardInner'),
-      cardLayout: $('cardLayout'), sideImageFrame: $('sideImageFrame'), sideImagePreview: $('sideImagePreview'), cardTextPanel: $('cardTextPanel'),
+      cardLayout: $('cardLayout'), sideImageFrame: $('sideImageFrame'), sideImagePreview: $('sideImagePreview'), cardTextPanel: $('cardTextPanel'), cardTextContent: $('cardTextContent'),
       eyebrow: $('eyebrow'), cardTitle: $('cardTitle'), cardMemo: $('cardMemo'), excerptContent: $('excerptContent'), footerNote: $('footerNote'), libraryList: $('libraryList')
     };
+
+
+    function makeId() {
+      if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') return globalThis.crypto.randomUUID();
+      return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    }
 
     function init() {
       resetSpeakers(true);
@@ -823,6 +855,7 @@
     function applyCreatorPreset() {
       refs.pairInput.value = 'BLANC × ELPIS';
       refs.watermarkInput.value = 'SERENDIPITY';
+      refs.accentColor.value = '#9cc8ff';
 
       const creatorSpeakers = [
         { name: '준희', color: '#9cc8ff' },
@@ -832,7 +865,7 @@
       creatorSpeakers.forEach(item => {
         const existing = state.speakers.find(speaker => speaker.name === item.name);
         if (existing) existing.color = item.color;
-        else state.speakers.push({ id: crypto.randomUUID(), name: item.name, color: item.color });
+        else state.speakers.push({ id: makeId(), name: item.name, color: item.color });
       });
 
       renderSpeakerList();
@@ -894,7 +927,7 @@
         setStatus('화자 이름을 입력해줘.');
         return;
       }
-      state.speakers.push({ id: crypto.randomUUID(), name, color });
+      state.speakers.push({ id: makeId(), name, color });
       refs.speakerName.value = '';
       renderSpeakerList();
       render();
@@ -1172,90 +1205,148 @@
       refs.sideImagePreview.style.transform = `scale(${Number(refs.sideImageZoom.value) / 100})`;
     }
 
-    function applySizing() {
+    function getPortraitRatio() {
       const preset = refs.sizePreset.value;
-      refs.exportTarget.style.aspectRatio = '';
-      refs.exportTarget.style.minHeight = '';
+      if (preset === '3:4') return { w: 3, h: 4 };
+      if (preset === '2:3') return { w: 2, h: 3 };
+      return { w: 4, h: 5 };
+    }
+
+    function applySizing() {
+      const ratio = getPortraitRatio();
       refs.exportTarget.style.width = '100%';
       refs.exportTarget.style.maxWidth = '640px';
-      if (preset === '3:4') refs.exportTarget.style.aspectRatio = '3 / 4';
-      else if (preset === '2:3') refs.exportTarget.style.aspectRatio = '2 / 3';
-      else refs.exportTarget.style.aspectRatio = '4 / 5';
+      refs.exportTarget.style.aspectRatio = `${ratio.w} / ${ratio.h}`;
+      refs.exportTarget.style.height = '';
+      refs.exportTarget.style.minHeight = '';
+      refs.exportTarget.style.maxHeight = 'none';
     }
 
     function applyTypographyForFit(fontSize, lineHeight) {
       const base = Number(fontSize);
-      const ratio = Math.max(0.52, Math.min(1, base / Math.max(1, Number(refs.baseFontSize.value))));
+      const ratio = Math.max(0.38, Math.min(1, base / Math.max(1, Number(refs.baseFontSize.value))));
       refs.cardInner.style.fontSize = base + 'px';
       refs.cardInner.style.lineHeight = lineHeight;
-      refs.cardTitle.style.fontSize = Math.max(17, 28 * ratio) + 'px';
-      refs.cardMemo.style.fontSize = Math.max(9, 13 * ratio) + 'px';
-      refs.cardMemo.style.lineHeight = Math.max(1.3, 1.6 - (1 - ratio) * 0.25);
-      refs.excerptContent.style.gap = Math.max(5, 14 * ratio) + 'px';
-      refs.cardTitle.parentElement.style.marginBottom = Math.max(8, 20 * ratio) + 'px';
-      refs.footerNote.style.marginTop = Math.max(7, 20 * ratio) + 'px';
-      refs.footerNote.style.fontSize = Math.max(8, 11 * ratio) + 'px';
-      refs.eyebrow.style.gap = Math.max(3, 6 * ratio) + 'px';
-      refs.eyebrow.style.marginBottom = Math.max(4, 10 * ratio) + 'px';
+      refs.cardTitle.style.fontSize = Math.max(13, 28 * ratio) + 'px';
+      refs.cardMemo.style.fontSize = Math.max(7, 13 * ratio) + 'px';
+      refs.cardMemo.style.lineHeight = Math.max(1.15, 1.6 - (1 - ratio) * 0.35);
+      refs.excerptContent.style.gap = Math.max(2, 14 * ratio) + 'px';
+      refs.cardTitle.parentElement.style.marginBottom = Math.max(4, 20 * ratio) + 'px';
+      refs.footerNote.style.marginTop = Math.max(4, 20 * ratio) + 'px';
+      refs.footerNote.style.fontSize = Math.max(6, 11 * ratio) + 'px';
+      refs.eyebrow.style.gap = Math.max(2, 6 * ratio) + 'px';
+      refs.eyebrow.style.marginBottom = Math.max(2, 10 * ratio) + 'px';
       refs.eyebrow.querySelectorAll('span').forEach(chip => {
-        chip.style.fontSize = Math.max(8, 11 * ratio) + 'px';
-        chip.style.padding = `${Math.max(3, 5 * ratio)}px ${Math.max(6, 10 * ratio)}px`;
+        chip.style.fontSize = Math.max(6, 11 * ratio) + 'px';
+        chip.style.padding = `${Math.max(2, 5 * ratio)}px ${Math.max(4, 10 * ratio)}px`;
       });
       refs.excerptContent.querySelectorAll('.speaker-label').forEach(label => {
-        label.style.fontSize = Math.max(8, 12 * ratio) + 'px';
+        label.style.fontSize = Math.max(6, 12 * ratio) + 'px';
       });
       refs.excerptContent.querySelectorAll('.speaker-block').forEach(block => {
-        block.style.gap = Math.max(3, 6 * ratio) + 'px';
+        block.style.gap = Math.max(2, 6 * ratio) + 'px';
       });
     }
 
     function fitTextToCard() {
-      const baseFont = Number(refs.baseFontSize.value || 18);
-      const baseLine = Number(refs.lineHeight.value || 1.8);
+      const width = refs.exportTarget.getBoundingClientRect().width;
+      if (!width) return;
+
+      const ratio = getPortraitRatio();
+      const baseHeight = width * ratio.h / ratio.w;
+      const growLimit = Math.max(1, Number(refs.autoGrowLimit?.value || 1.30));
+      const maxHeight = baseHeight * growLimit;
+      const baseFont = Math.max(3, Number(refs.baseFontSize.value || 18));
+      const baseLine = Math.max(1, Number(refs.lineHeight.value || 1.8));
+      const minFont = Math.max(3, Math.min(baseFont, Number(refs.minAutoFontSize.value || 5)));
+      const requestedPadding = Math.max(4, Number(refs.cardPadding.value || 34));
+      const panel = refs.cardTextPanel;
+      const content = refs.cardTextContent;
+
+      refs.exportTarget.style.aspectRatio = 'auto';
+      refs.exportTarget.style.height = baseHeight + 'px';
+      content.style.transform = 'none';
+      content.style.transformOrigin = 'top left';
+      content.style.width = '100%';
+      refs.cardInner.style.padding = requestedPadding + 'px';
       applyTypographyForFit(baseFont, baseLine);
 
+      const overflows = () => content.scrollHeight > panel.clientHeight + 1 || content.scrollWidth > panel.clientWidth + 1;
+
       if (!refs.autoFitText.checked) {
-        refs.fitNote.textContent = '자동 맞춤 꺼짐 · 글이 넘치면 카드 밖 내용이 잘릴 수 있어.';
+        refs.fitNote.textContent = '자동 맞춤 꺼짐 · 글이 넘치면 카드 안에서 잘릴 수 있어.';
         refs.fitNote.className = 'fit-note tight';
         return;
       }
 
-      const minFont = Number(refs.minAutoFontSize.value || 9);
+      let cardHeight = baseHeight;
       let font = baseFont;
       let line = baseLine;
-      let iterations = 0;
-      const panel = refs.cardTextPanel;
+      let padding = requestedPadding;
+      let grew = false;
 
-      const overflows = () => panel.scrollHeight > panel.clientHeight + 1 || panel.scrollWidth > panel.clientWidth + 1;
+      // 먼저 카드 자체를 필요한 만큼만 늘린다. 기본보다 지나치게 길어지지 않도록 상한을 둔다.
+      while (overflows() && cardHeight < maxHeight - 1) {
+        cardHeight = Math.min(maxHeight, cardHeight + Math.max(8, width * 0.018));
+        refs.exportTarget.style.height = cardHeight + 'px';
+        grew = true;
+      }
 
-      while (overflows() && font > minFont && iterations < 80) {
-        font = Math.max(minFont, font - 0.5);
+      // 최대 높이에 도달하면 글자 크기를 조절한다.
+      let guard = 0;
+      while (overflows() && font > minFont && guard < 180) {
+        font = Math.max(minFont, font - 0.25);
         const shrink = baseFont - font;
-        line = Math.max(1.22, baseLine - shrink * 0.035);
+        line = Math.max(1.02, baseLine - shrink * 0.05);
         applyTypographyForFit(font, line);
-        iterations++;
+        guard++;
       }
 
-      if (overflows() && line > 1.18) {
-        while (overflows() && line > 1.18 && iterations < 120) {
-          line = Math.max(1.18, line - 0.03);
-          applyTypographyForFit(font, line);
-          iterations++;
-        }
+      // 줄간격과 카드 여백도 순서대로 조금 더 압축한다.
+      while (overflows() && line > 1.0 && guard < 260) {
+        line = Math.max(1.0, line - 0.02);
+        applyTypographyForFit(font, line);
+        guard++;
+      }
+      while (overflows() && padding > 4 && guard < 340) {
+        padding = Math.max(4, padding - 1);
+        refs.cardInner.style.padding = padding + 'px';
+        guard++;
       }
 
+      // 사용자가 정한 최소 글자 크기로도 부족할 때는 누락시키지 않고 더 작게 내려간다.
+      // 발췌 전체 표시가 최소 글자 크기보다 우선한다.
+      while (overflows() && font > 3 && guard < 520) {
+        font = Math.max(3, font - 0.2);
+        line = Math.max(1.0, line - 0.01);
+        applyTypographyForFit(font, line);
+        guard++;
+      }
+
+      // 극단적으로 긴 글도 잘리지 않게 마지막으로 전체 텍스트 블록을 시각적으로 축소한다.
+      let fallbackScale = 1;
       if (overflows()) {
-        refs.fitNote.textContent = `글이 아주 길어서 ${font.toFixed(font % 1 ? 1 : 0)}px까지 줄였어. 이미지 크기나 카드 정보를 조금 줄이면 더 여유롭게 보여.`;
+        const hRatio = panel.clientHeight / Math.max(1, content.scrollHeight);
+        const wRatio = panel.clientWidth / Math.max(1, content.scrollWidth);
+        fallbackScale = Math.max(0.05, Math.min(1, hRatio, wRatio));
+        content.style.transform = `scale(${fallbackScale})`;
+      }
+
+      const grewPct = Math.max(0, Math.round((cardHeight / baseHeight - 1) * 100));
+      if (fallbackScale < 0.999) {
+        refs.fitNote.textContent = `글 전체 표시 우선 · 카드 +${grewPct}% · 본문 ${Math.round(fallbackScale * 100)}%로 최종 맞춤.`;
         refs.fitNote.className = 'fit-note tight';
-      } else if (font < baseFont - 0.1) {
-        refs.fitNote.textContent = `한 장에 맞게 본문을 자동으로 ${font.toFixed(font % 1 ? 1 : 0)}px로 조정했어.`;
+      } else if (font < minFont - 0.01) {
+        refs.fitNote.textContent = `글 전체를 넣기 위해 카드 +${grewPct}% · 본문 ${font.toFixed(1)}px까지 자동 조절했어.`;
+        refs.fitNote.className = 'fit-note tight';
+      } else if (grew || font < baseFont - 0.01 || padding < requestedPadding || line < baseLine - 0.01) {
+        refs.fitNote.textContent = `카드가 ${grewPct ? `최대 +${grewPct}% 늘어나고 ` : ''}본문 ${font.toFixed(font % 1 ? 1 : 0)}px로 전체가 들어가게 맞춰졌어.`;
         refs.fitNote.className = 'fit-note ok';
       } else {
-        refs.fitNote.textContent = '설정한 글자 크기 그대로 한 장에 들어가.';
+        refs.fitNote.textContent = '설정한 크기 그대로 발췌 전체가 들어가.';
         refs.fitNote.className = 'fit-note ok';
       }
     }
-
 
     function render() {
       renderEyebrow();
@@ -1288,7 +1379,7 @@
 
     function collectFormData() {
       return {
-        id: state.editingId || crypto.randomUUID(),
+        id: state.editingId || makeId(),
         excerpt: refs.excerptInput.value,
         quoteMode: refs.quoteMode.checked,
         title: refs.titleInput.value,
@@ -1335,6 +1426,7 @@
           sizePreset: refs.sizePreset.value,
           autoFitText: refs.autoFitText.checked,
           minAutoFontSize: refs.minAutoFontSize.value,
+          autoGrowLimit: refs.autoGrowLimit.value,
           watermark: refs.watermarkInput.value,
           exportScale: refs.exportScale.value,
         },
@@ -1448,7 +1540,8 @@
       refs.overlayOpacity.value = s.overlayOpacity || 0;
       refs.sizePreset.value = ['4:5','3:4','2:3'].includes(s.sizePreset) ? s.sizePreset : '4:5';
       refs.autoFitText.checked = s.autoFitText !== false;
-      refs.minAutoFontSize.value = s.minAutoFontSize || 9;
+      refs.minAutoFontSize.value = s.minAutoFontSize || 5;
+      refs.autoGrowLimit.value = s.autoGrowLimit || '1.30';
       refs.watermarkInput.value = s.watermark || '';
       refs.exportScale.value = s.exportScale || '2';
       ['baseFontSize','lineHeight','cardRadius','cardPadding','sideImageWidth','sideImageHeight','sideImageZoom','sideImageRadius','sideImagePosX','sideImagePosY','sideImageGap','minAutoFontSize','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
@@ -1577,7 +1670,8 @@
       refs.overlayOpacity.value = 0;
       refs.sizePreset.value = '4:5';
       refs.autoFitText.checked = true;
-      refs.minAutoFontSize.value = 9;
+      refs.minAutoFontSize.value = 5;
+      refs.autoGrowLimit.value = '1.30';
       refs.watermarkInput.value = '';
       refs.exportScale.value = '2';
       updateSideImagePlacementControls();
