@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SERENDIPITY EXCERPT MAKER</title>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg: #fff8fb;
+      --panel: #ffffff;
+      --panel-border: #f1d7e4;
+      --accent: #f3a8c2;
+      --accent-strong: #e987ab;
+      --text: #473944;
+      --muted: #8f7d87;
+      --shadow: 0 10px 30px rgba(221, 169, 190, 0.18);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: linear-gradient(180deg, #fff8fb 0%, #fff0f6 100%);
+      color: var(--text);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(340px, 430px) 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: rgba(255,255,255,0.92);
+      border-right: 1px solid #f4dbe6;
+      overflow-y: auto;
+      padding: 24px 20px 40px;
+      backdrop-filter: blur(10px);
+    }
+
+    .brand {
+      margin-bottom: 18px;
+      padding: 18px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #ffe8f1, #fff8fb);
+      border: 1px solid #f5d4e2;
+      box-shadow: var(--shadow);
+    }
+    .brand h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      letter-spacing: 0.02em;
+    }
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .section {
+      margin-top: 16px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 3px 18px rgba(240, 190, 210, 0.08);
+    }
+    .section h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+    }
+    .section p.desc {
+      margin: -4px 0 12px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .grid2, .grid3 {
+      display: grid;
+      gap: 10px;
+    }
+    .grid2 { grid-template-columns: 1fr 1fr; }
+    .grid3 { grid-template-columns: repeat(3, 1fr); }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #5d4d57;
+    }
+    input[type="text"], input[type="number"], input[type="date"], textarea, select {
+      width: 100%;
+      border: 1px solid #ead2dd;
+      background: #fffdfd;
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    input[type="range"] {
+      width: 100%;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 170px;
+      line-height: 1.55;
+    }
+    .inline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+    }
+    .inline input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      box-shadow: 0 8px 16px rgba(233, 135, 171, 0.18);
+    }
+    button.secondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid #e8d3dc;
+      box-shadow: none;
+    }
+    button.small {
+      padding: 7px 10px;
+      font-size: 12px;
+      border-radius: 10px;
+    }
+    button.danger {
+      background: linear-gradient(135deg, #f5a0aa, #ef7386);
+    }
+
+    .speaker-card, .library-card {
+      border: 1px solid #edd7e1;
+      border-radius: 14px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #fffafa;
+    }
+    .speaker-card-head, .library-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .speaker-name-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #5d4d57;
+    }
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    .library-card p {
+      margin: 6px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .preview-wrap {
+      overflow: auto;
+      padding: 24px;
+    }
+    .preview-stage {
+      min-height: calc(100vh - 48px);
+      border-radius: 28px;
+      background: rgba(255,255,255,0.45);
+      border: 1px dashed rgba(234, 192, 210, 0.8);
+      padding: 28px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .excerpt-card {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      max-width: 640px;
+      background: #ffffff;
+      color: #2f2530;
+      border-radius: 28px;
+      box-shadow: 0 24px 50px rgba(180, 131, 151, 0.18);
+    }
+    .card-bg-layer,
+    .card-overlay-layer,
+    .card-content-box {
+      position: absolute;
+      inset: 0;
+    }
+    .card-bg-layer {
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      transform-origin: center center;
+    }
+    .card-overlay-layer { pointer-events: none; }
+
+    .card-inner {
+      position: relative;
+      z-index: 2;
+      padding: 34px;
+    }
+
+    .card-top {
+      margin-bottom: 20px;
+    }
+    .eyebrow {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .eyebrow span {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.6);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .card-title {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.3;
+      margin: 0 0 8px;
+      word-break: keep-all;
+    }
+    .card-memo {
+      font-size: 13px;
+      opacity: 0.86;
+      line-height: 1.6;
+      margin-top: 6px;
+      white-space: pre-wrap;
+    }
+
+    .excerpt-content {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      word-break: keep-all;
+    }
+    .excerpt-line {
+      white-space: pre-wrap;
+      line-height: inherit;
+    }
+    .excerpt-line.narration { opacity: 0.94; }
+    .excerpt-line.monologue {
+      font-style: italic;
+      opacity: 0.92;
+    }
+    .excerpt-line.highlight {
+      font-weight: 700;
+    }
+    .speaker-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .speaker-label {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+    .speaker-text {
+      padding-left: 2px;
+    }
+
+    .content-box-soft {
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.42);
+      border-radius: 24px;
+      margin: 18px;
+      z-index: 1;
+    }
+    .content-box-solid {
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      margin: 18px;
+      z-index: 1;
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      font-size: 11px;
+      opacity: 0.78;
+      text-align: right;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      min-height: 18px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 1120px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { border-right: 0; border-bottom: 1px solid #f4dbe6; }
+      .preview-stage { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>SERENDIPITY EXCERPT</h1>
+        <p>원문 전체 보관 없이, 발췌하고 싶은 부분만 넣어서 꾸미고 저장하는 개인용 발췌기.</p>
+      </div>
+
+      <section class="section">
+        <h2>1. 발췌문</h2>
+        <p class="desc">화자 표기는 <strong>이름:</strong> 형식으로 입력하면 자동 구분됨. 예) <code>우준희: 네가 여기 있으면 됐어.</code></p>
+        <label for="excerptInput">발췌문 입력</label>
+        <textarea id="excerptInput" placeholder="발췌하고 싶은 부분만 입력해줘.&#10;&#10;우준희: 네가 여기 있으면 됐어.&#10;혜교: 그럼 계속 있을게.&#10;그는 잠시 대답하지 않았다."></textarea>
+        <div class="inline"><input type="checkbox" id="quoteMode" checked><label for="quoteMode" style="margin:0;font-weight:500;">따옴표 자동 강조 감지 (“ ”, \" \" 포함)</label></div>
+      </section>
+
+      <section class="section">
+        <h2>2. 카드 정보</h2>
+        <div class="grid2">
+          <div><label for="titleInput">제목</label><input id="titleInput" type="text" placeholder="처음으로 돌아갈 곳이 생긴 날"></div>
+          <div><label for="dateInput">날짜</label><input id="dateInput" type="date"></div>
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div><label for="locationInput">장소</label><input id="locationInput" type="text" placeholder="우리 집"></div>
+          <div><label for="pairInput">시리즈/페어명</label><input id="pairInput" type="text" placeholder="BLANC × ELPIS"></div>
+        </div>
+        <div style="margin-top:10px;"><label for="tagsInput">태그</label><input id="tagsInput" type="text" placeholder="#일상 #가이딩 #고백"></div>
+        <div style="margin-top:10px;"><label for="memoInput">짧은 메모</label><textarea id="memoInput" placeholder="준희가 처음으로 먼저 붙잡았던 날" style="min-height:90px;"></textarea></div>
+      </section>
+
+      <section class="section">
+        <h2>3. 화자 설정</h2>
+        <p class="desc">입력한 화자 이름에 맞춰 색을 자동 적용함.</p>
+        <div id="speakerList"></div>
+        <div class="grid3">
+          <div style="grid-column: span 2;"><label for="speakerName">화자 이름</label><input id="speakerName" type="text" placeholder="우준희"></div>
+          <div><label for="speakerColor">색상</label><input id="speakerColor" type="color" value="#9cc8ff" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff; padding:4px;"></div>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="secondary" id="addSpeakerBtn">화자 추가</button>
+          <button type="button" class="secondary small" id="resetSpeakersBtn">기본 화자 복원</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>4. 디자인</h2>
+        <div class="grid2">
+          <div>
+            <label for="presetSelect">스타일 프리셋</label>
+            <select id="presetSelect">
+              <option value="princess">Princess</option>
+              <option value="novel">Novel</option>
+              <option value="letter">Letter</option>
+              <option value="minimal">Minimal</option>
+              <option value="dark">Dark</option>
+              <option value="diary">Diary</option>
+            </select>
+          </div>
+          <div>
+            <label for="fontSelect">폰트 계열</label>
+            <select id="fontSelect">
+              <option value="Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif">Pretendard/Sans</option>
+              <option value="Georgia, Times New Roman, serif">Serif</option>
+              <option value="'Trebuchet MS', 'Noto Sans KR', sans-serif">Soft Sans</option>
+              <option value="'Comic Sans MS', 'Apple SD Gothic Neo', sans-serif">Diary</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div><label for="baseFontSize">본문 글자 크기 <span id="baseFontSizeVal">18</span>px</label><input id="baseFontSize" type="range" min="14" max="28" value="18"></div>
+          <div><label for="lineHeight">줄간격 <span id="lineHeightVal">1.8</span></label><input id="lineHeight" type="range" min="1.3" max="2.4" step="0.1" value="1.8"></div>
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div><label for="cardRadius">모서리 <span id="cardRadiusVal">28</span>px</label><input id="cardRadius" type="range" min="0" max="40" value="28"></div>
+          <div><label for="cardPadding">안쪽 여백 <span id="cardPaddingVal">34</span>px</label><input id="cardPadding" type="range" min="18" max="64" value="34"></div>
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div><label for="bodyColor">본문색</label><input id="bodyColor" type="color" value="#3e3038" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff; padding:4px;"></div>
+          <div><label for="accentColor">포인트색</label><input id="accentColor" type="color" value="#e98aac" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff; padding:4px;"></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>5. 배경</h2>
+        <div class="grid2">
+          <div>
+            <label for="bgType">배경 종류</label>
+            <select id="bgType">
+              <option value="color">단색</option>
+              <option value="gradient">그라데이션</option>
+              <option value="image">이미지 첨부</option>
+            </select>
+          </div>
+          <div>
+            <label for="contentBoxMode">본문 박스</label>
+            <select id="contentBoxMode">
+              <option value="none">없음</option>
+              <option value="soft">반투명</option>
+              <option value="solid">불투명</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div><label for="bgColor1">배경색 1</label><input id="bgColor1" type="color" value="#fff8fb" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff; padding:4px;"></div>
+          <div><label for="bgColor2">배경색 2</label><input id="bgColor2" type="color" value="#ffe7f0" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff; padding:4px;"></div>
+        </div>
+        <div id="bgImageControls" class="hidden">
+          <div style="margin-top:10px;"><label for="bgImageInput">배경 이미지 첨부</label><input id="bgImageInput" type="file" accept="image/*"></div>
+          <div class="grid2" style="margin-top:10px;">
+            <div>
+              <label for="bgFit">표시 방식</label>
+              <select id="bgFit">
+                <option value="cover">채우기</option>
+                <option value="contain">맞춤</option>
+                <option value="repeat">반복</option>
+              </select>
+            </div>
+            <div>
+              <label for="bgPos">기준 위치</label>
+              <select id="bgPos">
+                <option value="center center">가운데</option>
+                <option value="center top">위</option>
+                <option value="center bottom">아래</option>
+                <option value="left center">왼쪽</option>
+                <option value="right center">오른쪽</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid2" style="margin-top:10px;">
+            <div><label for="bgScale">이미지 확대 <span id="bgScaleVal">100</span>%</label><input id="bgScale" type="range" min="50" max="180" value="100"></div>
+            <div><label for="bgOpacity">이미지 투명도 <span id="bgOpacityVal">100</span>%</label><input id="bgOpacity" type="range" min="10" max="100" value="100"></div>
+          </div>
+          <div class="grid2" style="margin-top:10px;">
+            <div><label for="bgBlur">블러 <span id="bgBlurVal">0</span>px</label><input id="bgBlur" type="range" min="0" max="20" value="0"></div>
+            <div><label for="bgBrightness">밝기 <span id="bgBrightnessVal">100</span>%</label><input id="bgBrightness" type="range" min="40" max="160" value="100"></div>
+          </div>
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div><label for="overlayColor">오버레이 색</label><input id="overlayColor" type="color" value="#ffffff" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff; padding:4px;"></div>
+          <div><label for="overlayOpacity">오버레이 <span id="overlayOpacityVal">0</span>%</label><input id="overlayOpacity" type="range" min="0" max="90" value="0"></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>6. 출력 / 저장</h2>
+        <div class="grid2">
+          <div>
+            <label for="sizePreset">크기 프리셋</label>
+            <select id="sizePreset">
+              <option value="4:5">세로 4:5 (1080×1350)</option>
+              <option value="1:1">정사각형 (1080×1080)</option>
+              <option value="9:16">스토리형 (1080×1920)</option>
+              <option value="auto">긴 발췌 (1080 × 높이 자동)</option>
+            </select>
+          </div>
+          <div>
+            <label for="watermarkInput">푸터 워터마크</label><input id="watermarkInput" type="text" placeholder="SERENDIPITY"></div>
+        </div>
+        <div class="btn-row">
+          <button type="button" id="saveBtn">현재 발췌 저장</button>
+          <button type="button" id="exportBtn">PNG 저장</button>
+          <button type="button" class="secondary" id="newBtn">새 발췌</button>
+        </div>
+        <div class="status" id="statusText"></div>
+      </section>
+
+      <section class="section">
+        <h2>7. 저장된 발췌</h2>
+        <div id="libraryList"></div>
+      </section>
+    </aside>
+
+    <main class="preview-wrap">
+      <div class="preview-stage">
+        <div class="excerpt-card" id="exportTarget">
+          <div class="card-bg-layer" id="cardBg"></div>
+          <div class="card-overlay-layer" id="cardOverlay"></div>
+          <div class="card-content-box" id="contentBox"></div>
+          <div class="card-inner" id="cardInner">
+            <div class="card-top">
+              <div class="eyebrow" id="eyebrow"></div>
+              <h2 class="card-title" id="cardTitle">제목을 입력해줘</h2>
+              <div class="card-memo" id="cardMemo"></div>
+            </div>
+            <div class="excerpt-content" id="excerptContent"></div>
+            <div class="footer-note" id="footerNote"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'serendipity_excerpt_library_v1';
+    const DEFAULT_SPEAKERS = [
+      { id: crypto.randomUUID(), name: '우준희', color: '#9cc8ff' },
+      { id: crypto.randomUUID(), name: '혜교', color: '#f4a8c6' },
+      { id: crypto.randomUUID(), name: '채아', color: '#d9b9ff' },
+    ];
+
+    const state = {
+      speakers: [],
+      bgImageData: '',
+      editingId: null,
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    const refs = {
+      excerptInput: $('excerptInput'), quoteMode: $('quoteMode'), titleInput: $('titleInput'), dateInput: $('dateInput'),
+      locationInput: $('locationInput'), pairInput: $('pairInput'), tagsInput: $('tagsInput'), memoInput: $('memoInput'),
+      speakerName: $('speakerName'), speakerColor: $('speakerColor'), speakerList: $('speakerList'),
+      addSpeakerBtn: $('addSpeakerBtn'), resetSpeakersBtn: $('resetSpeakersBtn'),
+      presetSelect: $('presetSelect'), fontSelect: $('fontSelect'), baseFontSize: $('baseFontSize'), lineHeight: $('lineHeight'),
+      cardRadius: $('cardRadius'), cardPadding: $('cardPadding'), bodyColor: $('bodyColor'), accentColor: $('accentColor'),
+      bgType: $('bgType'), contentBoxMode: $('contentBoxMode'), bgColor1: $('bgColor1'), bgColor2: $('bgColor2'), bgImageInput: $('bgImageInput'),
+      bgFit: $('bgFit'), bgPos: $('bgPos'), bgScale: $('bgScale'), bgOpacity: $('bgOpacity'), bgBlur: $('bgBlur'), bgBrightness: $('bgBrightness'),
+      overlayColor: $('overlayColor'), overlayOpacity: $('overlayOpacity'), bgImageControls: $('bgImageControls'),
+      sizePreset: $('sizePreset'), watermarkInput: $('watermarkInput'), saveBtn: $('saveBtn'), exportBtn: $('exportBtn'), newBtn: $('newBtn'), statusText: $('statusText'),
+      exportTarget: $('exportTarget'), cardBg: $('cardBg'), cardOverlay: $('cardOverlay'), contentBox: $('contentBox'), cardInner: $('cardInner'),
+      eyebrow: $('eyebrow'), cardTitle: $('cardTitle'), cardMemo: $('cardMemo'), excerptContent: $('excerptContent'), footerNote: $('footerNote'), libraryList: $('libraryList')
+    };
+
+    function init() {
+      resetSpeakers(true);
+      bindEvents();
+      applyPreset();
+      updateBgControlsVisibility();
+      render();
+      renderLibrary();
+      setStatus('준비 완료');
+    }
+
+    function bindEvents() {
+      document.querySelectorAll('input, textarea, select').forEach((el) => {
+        if (el.type === 'file') return;
+        el.addEventListener('input', render);
+        el.addEventListener('change', render);
+      });
+
+      refs.baseFontSize.addEventListener('input', () => $('baseFontSizeVal').textContent = refs.baseFontSize.value);
+      refs.lineHeight.addEventListener('input', () => $('lineHeightVal').textContent = refs.lineHeight.value);
+      refs.cardRadius.addEventListener('input', () => $('cardRadiusVal').textContent = refs.cardRadius.value);
+      refs.cardPadding.addEventListener('input', () => $('cardPaddingVal').textContent = refs.cardPadding.value);
+      refs.bgScale.addEventListener('input', () => $('bgScaleVal').textContent = refs.bgScale.value);
+      refs.bgOpacity.addEventListener('input', () => $('bgOpacityVal').textContent = refs.bgOpacity.value);
+      refs.bgBlur.addEventListener('input', () => $('bgBlurVal').textContent = refs.bgBlur.value);
+      refs.bgBrightness.addEventListener('input', () => $('bgBrightnessVal').textContent = refs.bgBrightness.value);
+      refs.overlayOpacity.addEventListener('input', () => $('overlayOpacityVal').textContent = refs.overlayOpacity.value);
+
+      refs.presetSelect.addEventListener('change', applyPreset);
+      refs.bgType.addEventListener('change', updateBgControlsVisibility);
+      refs.bgImageInput.addEventListener('change', onBgImageUpload);
+      refs.addSpeakerBtn.addEventListener('click', addSpeaker);
+      refs.resetSpeakersBtn.addEventListener('click', () => resetSpeakers());
+      refs.saveBtn.addEventListener('click', saveCurrentEntry);
+      refs.exportBtn.addEventListener('click', exportPng);
+      refs.newBtn.addEventListener('click', clearForm);
+    }
+
+    function setStatus(msg) {
+      refs.statusText.textContent = msg;
+    }
+
+    function resetSpeakers(silent = false) {
+      state.speakers = JSON.parse(JSON.stringify(DEFAULT_SPEAKERS));
+      renderSpeakerList();
+      render();
+      if (!silent) setStatus('기본 화자를 복원했어.');
+    }
+
+    function renderSpeakerList() {
+      refs.speakerList.innerHTML = '';
+      state.speakers.forEach((speaker) => {
+        const card = document.createElement('div');
+        card.className = 'speaker-card';
+        card.innerHTML = `
+          <div class="speaker-card-head">
+            <div class="speaker-name-chip"><span class="dot" style="background:${speaker.color}"></span>${escapeHtml(speaker.name)}</div>
+            <button type="button" class="secondary small" data-id="${speaker.id}">삭제</button>
+          </div>
+          <div class="grid2">
+            <div><label>이름</label><input type="text" value="${escapeAttr(speaker.name)}" data-field="name" data-id="${speaker.id}"></div>
+            <div><label>색상</label><input type="color" value="${speaker.color}" data-field="color" data-id="${speaker.id}" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff;padding:4px;"></div>
+          </div>
+        `;
+        refs.speakerList.appendChild(card);
+      });
+
+      refs.speakerList.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const id = e.target.dataset.id;
+          const field = e.target.dataset.field;
+          const speaker = state.speakers.find(s => s.id === id);
+          if (!speaker) return;
+          speaker[field] = e.target.value;
+          renderSpeakerList();
+          render();
+        });
+      });
+
+      refs.speakerList.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.speakers = state.speakers.filter(s => s.id !== btn.dataset.id);
+          renderSpeakerList();
+          render();
+          setStatus('화자를 삭제했어.');
+        });
+      });
+    }
+
+    function addSpeaker() {
+      const name = refs.speakerName.value.trim();
+      const color = refs.speakerColor.value;
+      if (!name) {
+        setStatus('화자 이름을 입력해줘.');
+        return;
+      }
+      state.speakers.push({ id: crypto.randomUUID(), name, color });
+      refs.speakerName.value = '';
+      renderSpeakerList();
+      render();
+      setStatus(`화자 "${name}"를 추가했어.`);
+    }
+
+    function updateBgControlsVisibility() {
+      refs.bgImageControls.classList.toggle('hidden', refs.bgType.value !== 'image');
+      render();
+    }
+
+    function onBgImageUpload(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        state.bgImageData = reader.result;
+        render();
+        setStatus(`배경 이미지를 첨부했어. (${file.name})`);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function applyPreset() {
+      const preset = refs.presetSelect.value;
+      const presets = {
+        princess: { bg1: '#fff8fb', bg2: '#ffe7f0', body: '#3e3038', accent: '#e98aac', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
+        novel: { bg1: '#fffdf7', bg2: '#f7efe5', body: '#443a35', accent: '#aa8f78', box: 'none', font: 'Georgia, Times New Roman, serif' },
+        letter: { bg1: '#fffaf5', bg2: '#ffe8ef', body: '#56454c', accent: '#d887a8', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
+        minimal: { bg1: '#ffffff', bg2: '#f4f4f4', body: '#2f2f35', accent: '#8f8fc2', box: 'none', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
+        dark: { bg1: '#2e2430', bg2: '#131217', body: '#fff7fb', accent: '#ffb5d0', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
+        diary: { bg1: '#fffaf8', bg2: '#ffeef6', body: '#604e58', accent: '#f29bbb', box: 'solid', font: "'Comic Sans MS', 'Apple SD Gothic Neo', sans-serif" },
+      };
+      const p = presets[preset];
+      refs.bgColor1.value = p.bg1;
+      refs.bgColor2.value = p.bg2;
+      refs.bodyColor.value = p.body;
+      refs.accentColor.value = p.accent;
+      refs.contentBoxMode.value = p.box;
+      refs.fontSelect.value = p.font;
+      render();
+    }
+
+    function parseExcerpt(text) {
+      const lines = text.split(/\n+/).map(line => line.trimEnd()).filter(Boolean);
+      return lines.map(line => {
+        const speakerMatch = line.match(/^([^:：]{1,24})[:：]\s*(.+)$/);
+        if (speakerMatch) {
+          return { type: 'speaker', speaker: speakerMatch[1].trim(), text: speakerMatch[2] };
+        }
+        const monoMatch = line.match(/^[\[(](.*?)[\])]$/);
+        if (monoMatch) {
+          return { type: 'monologue', text: monoMatch[1] };
+        }
+        return { type: 'narration', text: line };
+      });
+    }
+
+    function getSpeakerColor(name) {
+      return state.speakers.find(s => s.name === name)?.color || refs.accentColor.value;
+    }
+
+    function formatDateValue(v) {
+      if (!v) return '';
+      const [y,m,d] = v.split('-');
+      return `${y}.${m}.${d}`;
+    }
+
+    function renderEyebrow() {
+      refs.eyebrow.innerHTML = '';
+      const items = [];
+      const date = formatDateValue(refs.dateInput.value);
+      if (date) items.push(date);
+      if (refs.locationInput.value.trim()) items.push(refs.locationInput.value.trim());
+      if (refs.pairInput.value.trim()) items.push(refs.pairInput.value.trim());
+      const tags = refs.tagsInput.value.trim();
+      if (tags) {
+        tags.split(/\s+/).slice(0,6).forEach(t => items.push(t));
+      }
+      items.forEach(item => {
+        const span = document.createElement('span');
+        span.textContent = item;
+        refs.eyebrow.appendChild(span);
+      });
+    }
+
+    function renderExcerptContent() {
+      refs.excerptContent.innerHTML = '';
+      const parsed = parseExcerpt(refs.excerptInput.value);
+      if (parsed.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'excerpt-line narration';
+        empty.style.opacity = '0.65';
+        empty.textContent = '여기에 발췌문이 미리보기로 보여.';
+        refs.excerptContent.appendChild(empty);
+        return;
+      }
+
+      parsed.forEach(item => {
+        let node;
+        if (item.type === 'speaker') {
+          node = document.createElement('div');
+          node.className = 'speaker-block excerpt-line';
+          const label = document.createElement('div');
+          label.className = 'speaker-label';
+          label.textContent = item.speaker;
+          label.style.color = getSpeakerColor(item.speaker);
+          const text = document.createElement('div');
+          text.className = 'speaker-text';
+          fillRichText(text, item.text);
+          node.appendChild(label);
+          node.appendChild(text);
+        } else {
+          node = document.createElement('div');
+          node.className = `excerpt-line ${item.type}`;
+          fillRichText(node, item.text);
+        }
+        refs.excerptContent.appendChild(node);
+      });
+    }
+
+    function fillRichText(target, text) {
+      const accent = refs.accentColor.value;
+      const quoteMode = refs.quoteMode.checked;
+      if (!quoteMode) {
+        target.textContent = text;
+        return;
+      }
+      const regex = /(“[^”]+”|"[^"]+"|'[^']+')/g;
+      const parts = text.split(regex);
+      parts.forEach(part => {
+        if (!part) return;
+        if (regex.test(part)) regex.lastIndex = 0;
+        const matched = part.match(/^(“[^”]+”|"[^"]+"|'[^']+')$/);
+        if (matched) {
+          const span = document.createElement('span');
+          span.textContent = part;
+          span.style.color = accent;
+          span.style.fontWeight = '700';
+          target.appendChild(span);
+        } else {
+          target.appendChild(document.createTextNode(part));
+        }
+      });
+    }
+
+    function renderBackground() {
+      const bgType = refs.bgType.value;
+      refs.cardBg.style.backgroundImage = 'none';
+      refs.cardBg.style.backgroundColor = 'transparent';
+      refs.cardBg.style.backgroundSize = 'cover';
+      refs.cardBg.style.backgroundPosition = 'center center';
+      refs.cardBg.style.backgroundRepeat = 'no-repeat';
+      refs.cardBg.style.opacity = '1';
+      refs.cardBg.style.filter = 'none';
+      refs.cardBg.style.transform = 'scale(1)';
+
+      if (bgType === 'color') {
+        refs.cardBg.style.background = refs.bgColor1.value;
+      } else if (bgType === 'gradient') {
+        refs.cardBg.style.background = `linear-gradient(180deg, ${refs.bgColor1.value}, ${refs.bgColor2.value})`;
+      } else if (bgType === 'image') {
+        if (state.bgImageData) {
+          refs.cardBg.style.backgroundImage = `url(${state.bgImageData})`;
+          refs.cardBg.style.backgroundSize = refs.bgFit.value === 'repeat' ? 'auto' : refs.bgFit.value;
+          refs.cardBg.style.backgroundRepeat = refs.bgFit.value === 'repeat' ? 'repeat' : 'no-repeat';
+          refs.cardBg.style.backgroundPosition = refs.bgPos.value;
+          refs.cardBg.style.opacity = String(Number(refs.bgOpacity.value) / 100);
+          refs.cardBg.style.filter = `blur(${refs.bgBlur.value}px) brightness(${refs.bgBrightness.value}%)`;
+          refs.cardBg.style.transform = `scale(${Number(refs.bgScale.value) / 100})`;
+        } else {
+          refs.cardBg.style.background = `linear-gradient(180deg, ${refs.bgColor1.value}, ${refs.bgColor2.value})`;
+        }
+      }
+
+      const overlayOpacity = Number(refs.overlayOpacity.value) / 100;
+      refs.cardOverlay.style.background = hexToRgba(refs.overlayColor.value, overlayOpacity);
+
+      refs.contentBox.className = 'card-content-box';
+      if (refs.contentBoxMode.value === 'soft') refs.contentBox.classList.add('content-box-soft');
+      if (refs.contentBoxMode.value === 'solid') refs.contentBox.classList.add('content-box-solid');
+    }
+
+    function applySizing() {
+      const preset = refs.sizePreset.value;
+      refs.exportTarget.style.aspectRatio = '';
+      refs.exportTarget.style.minHeight = '';
+      refs.exportTarget.style.width = '100%';
+      refs.exportTarget.style.maxWidth = '640px';
+      if (preset === '4:5') refs.exportTarget.style.aspectRatio = '4 / 5';
+      if (preset === '1:1') refs.exportTarget.style.aspectRatio = '1 / 1';
+      if (preset === '9:16') refs.exportTarget.style.aspectRatio = '9 / 16';
+      if (preset === 'auto') refs.exportTarget.style.minHeight = '420px';
+    }
+
+    function render() {
+      renderEyebrow();
+      refs.cardTitle.textContent = refs.titleInput.value.trim() || '제목을 입력해줘';
+      refs.cardMemo.textContent = refs.memoInput.value.trim();
+      refs.cardMemo.style.display = refs.memoInput.value.trim() ? 'block' : 'none';
+      refs.footerNote.textContent = refs.watermarkInput.value.trim();
+      refs.footerNote.style.display = refs.watermarkInput.value.trim() ? 'block' : 'none';
+
+      refs.exportTarget.style.color = refs.bodyColor.value;
+      refs.cardInner.style.padding = refs.cardPadding.value + 'px';
+      refs.exportTarget.style.borderRadius = refs.cardRadius.value + 'px';
+      refs.cardInner.style.fontFamily = refs.fontSelect.value;
+      refs.cardInner.style.fontSize = refs.baseFontSize.value + 'px';
+      refs.cardInner.style.lineHeight = refs.lineHeight.value;
+      refs.cardTitle.style.color = refs.bodyColor.value;
+      document.querySelectorAll('.eyebrow span').forEach(chip => {
+        chip.style.color = refs.accentColor.value;
+      });
+      renderExcerptContent();
+      renderBackground();
+      applySizing();
+    }
+
+    function collectFormData() {
+      return {
+        id: state.editingId || crypto.randomUUID(),
+        excerpt: refs.excerptInput.value,
+        quoteMode: refs.quoteMode.checked,
+        title: refs.titleInput.value,
+        date: refs.dateInput.value,
+        location: refs.locationInput.value,
+        pair: refs.pairInput.value,
+        tags: refs.tagsInput.value,
+        memo: refs.memoInput.value,
+        speakers: state.speakers,
+        bgImageData: state.bgImageData,
+        settings: {
+          preset: refs.presetSelect.value,
+          font: refs.fontSelect.value,
+          baseFontSize: refs.baseFontSize.value,
+          lineHeight: refs.lineHeight.value,
+          cardRadius: refs.cardRadius.value,
+          cardPadding: refs.cardPadding.value,
+          bodyColor: refs.bodyColor.value,
+          accentColor: refs.accentColor.value,
+          bgType: refs.bgType.value,
+          contentBoxMode: refs.contentBoxMode.value,
+          bgColor1: refs.bgColor1.value,
+          bgColor2: refs.bgColor2.value,
+          bgFit: refs.bgFit.value,
+          bgPos: refs.bgPos.value,
+          bgScale: refs.bgScale.value,
+          bgOpacity: refs.bgOpacity.value,
+          bgBlur: refs.bgBlur.value,
+          bgBrightness: refs.bgBrightness.value,
+          overlayColor: refs.overlayColor.value,
+          overlayOpacity: refs.overlayOpacity.value,
+          sizePreset: refs.sizePreset.value,
+          watermark: refs.watermarkInput.value,
+        },
+        savedAt: new Date().toISOString(),
+      };
+    }
+
+    function saveCurrentEntry() {
+      const data = collectFormData();
+      const library = getLibrary();
+      const existingIndex = library.findIndex(item => item.id === data.id);
+      if (existingIndex >= 0) library[existingIndex] = data;
+      else library.unshift(data);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
+      state.editingId = data.id;
+      renderLibrary();
+      setStatus('현재 발췌를 저장했어.');
+    }
+
+    function getLibrary() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch { return []; }
+    }
+
+    function renderLibrary() {
+      const library = getLibrary();
+      refs.libraryList.innerHTML = '';
+      if (library.length === 0) {
+        refs.libraryList.innerHTML = '<p class="desc" style="margin:0;">아직 저장된 발췌가 없어.</p>';
+        return;
+      }
+      library.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'library-card';
+        const date = item.date ? formatDateValue(item.date) : '날짜 없음';
+        card.innerHTML = `
+          <div class="library-head">
+            <strong style="font-size:13px;">${escapeHtml(item.title || '제목 없음')}</strong>
+            <div style="display:flex;gap:6px;">
+              <button type="button" class="secondary small" data-action="load" data-id="${item.id}">불러오기</button>
+              <button type="button" class="secondary small" data-action="delete" data-id="${item.id}">삭제</button>
+            </div>
+          </div>
+          <p>${escapeHtml(date)} · ${escapeHtml(item.pair || '발췌')}</p>
+          <p>${escapeHtml((item.excerpt || '').slice(0, 70))}${(item.excerpt || '').length > 70 ? '…' : ''}</p>
+        `;
+        refs.libraryList.appendChild(card);
+      });
+
+      refs.libraryList.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.dataset.action === 'load') loadEntry(btn.dataset.id);
+          if (btn.dataset.action === 'delete') deleteEntry(btn.dataset.id);
+        });
+      });
+    }
+
+    function loadEntry(id) {
+      const item = getLibrary().find(v => v.id === id);
+      if (!item) return;
+      state.editingId = item.id;
+      refs.excerptInput.value = item.excerpt || '';
+      refs.quoteMode.checked = item.quoteMode ?? true;
+      refs.titleInput.value = item.title || '';
+      refs.dateInput.value = item.date || '';
+      refs.locationInput.value = item.location || '';
+      refs.pairInput.value = item.pair || '';
+      refs.tagsInput.value = item.tags || '';
+      refs.memoInput.value = item.memo || '';
+      state.speakers = item.speakers?.length ? item.speakers : JSON.parse(JSON.stringify(DEFAULT_SPEAKERS));
+      state.bgImageData = item.bgImageData || '';
+      const s = item.settings || {};
+      refs.presetSelect.value = s.preset || 'princess';
+      refs.fontSelect.value = s.font || refs.fontSelect.value;
+      refs.baseFontSize.value = s.baseFontSize || 18;
+      refs.lineHeight.value = s.lineHeight || 1.8;
+      refs.cardRadius.value = s.cardRadius || 28;
+      refs.cardPadding.value = s.cardPadding || 34;
+      refs.bodyColor.value = s.bodyColor || '#3e3038';
+      refs.accentColor.value = s.accentColor || '#e98aac';
+      refs.bgType.value = s.bgType || 'color';
+      refs.contentBoxMode.value = s.contentBoxMode || 'none';
+      refs.bgColor1.value = s.bgColor1 || '#fff8fb';
+      refs.bgColor2.value = s.bgColor2 || '#ffe7f0';
+      refs.bgFit.value = s.bgFit || 'cover';
+      refs.bgPos.value = s.bgPos || 'center center';
+      refs.bgScale.value = s.bgScale || 100;
+      refs.bgOpacity.value = s.bgOpacity || 100;
+      refs.bgBlur.value = s.bgBlur || 0;
+      refs.bgBrightness.value = s.bgBrightness || 100;
+      refs.overlayColor.value = s.overlayColor || '#ffffff';
+      refs.overlayOpacity.value = s.overlayOpacity || 0;
+      refs.sizePreset.value = s.sizePreset || '4:5';
+      refs.watermarkInput.value = s.watermark || '';
+      ['baseFontSize','lineHeight','cardRadius','cardPadding','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
+      renderSpeakerList();
+      updateBgControlsVisibility();
+      render();
+      setStatus('저장된 발췌를 불러왔어.');
+    }
+
+    function syncRangeLabel(id) {
+      const map = {
+        baseFontSize: 'baseFontSizeVal', lineHeight: 'lineHeightVal', cardRadius: 'cardRadiusVal', cardPadding: 'cardPaddingVal',
+        bgScale: 'bgScaleVal', bgOpacity: 'bgOpacityVal', bgBlur: 'bgBlurVal', bgBrightness: 'bgBrightnessVal', overlayOpacity: 'overlayOpacityVal'
+      };
+      const label = $(map[id]);
+      if (label) label.textContent = $(id).value;
+    }
+
+    function deleteEntry(id) {
+      const library = getLibrary().filter(v => v.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
+      if (state.editingId === id) state.editingId = null;
+      renderLibrary();
+      setStatus('저장된 발췌를 삭제했어.');
+    }
+
+    function clearForm() {
+      state.editingId = null;
+      state.bgImageData = '';
+      refs.bgImageInput.value = '';
+      refs.excerptInput.value = '';
+      refs.quoteMode.checked = true;
+      refs.titleInput.value = '';
+      refs.dateInput.value = '';
+      refs.locationInput.value = '';
+      refs.pairInput.value = 'BLANC × ELPIS';
+      refs.tagsInput.value = '';
+      refs.memoInput.value = '';
+      refs.presetSelect.value = 'princess';
+      refs.baseFontSize.value = 18;
+      refs.lineHeight.value = 1.8;
+      refs.cardRadius.value = 28;
+      refs.cardPadding.value = 34;
+      refs.bodyColor.value = '#3e3038';
+      refs.accentColor.value = '#e98aac';
+      refs.bgType.value = 'color';
+      refs.contentBoxMode.value = 'soft';
+      refs.bgColor1.value = '#fff8fb';
+      refs.bgColor2.value = '#ffe7f0';
+      refs.bgFit.value = 'cover';
+      refs.bgPos.value = 'center center';
+      refs.bgScale.value = 100;
+      refs.bgOpacity.value = 100;
+      refs.bgBlur.value = 0;
+      refs.bgBrightness.value = 100;
+      refs.overlayColor.value = '#ffffff';
+      refs.overlayOpacity.value = 0;
+      refs.sizePreset.value = '4:5';
+      refs.watermarkInput.value = 'SERENDIPITY';
+      resetSpeakers(true);
+      ['baseFontSize','lineHeight','cardRadius','cardPadding','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
+      updateBgControlsVisibility();
+      render();
+      setStatus('새 발췌 작성 상태로 초기화했어.');
+    }
+
+    async function exportPng() {
+      setStatus('PNG를 생성하는 중이야...');
+      try {
+        const target = refs.exportTarget;
+        const canvas = await html2canvas(target, {
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          scale: 2,
+        });
+        const link = document.createElement('a');
+        link.download = `${(refs.titleInput.value || 'excerpt').replace(/[\\/:*?"<>|]/g, '_')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        setStatus('PNG 저장을 시작했어.');
+      } catch (err) {
+        console.error(err);
+        setStatus('PNG 저장 중 오류가 났어.');
+      }
+    }
+
+    function hexToRgba(hex, alpha) {
+      const sanitized = hex.replace('#', '');
+      const bigint = parseInt(sanitized, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function escapeHtml(str = '') {
+      return str.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    }
+
+    function escapeAttr(str = '') {
+      return escapeHtml(str).replace(/`/g, '&#96;');
+    }
+
+    clearForm();
+    init();
+  </script>
+</body>
+</html>
