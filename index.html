@@ -267,7 +267,30 @@
       background: rgba(255,255,255,0.28);
       border: 1px solid rgba(255,255,255,0.38);
       box-shadow: 0 10px 24px rgba(80, 56, 67, 0.08);
+      cursor: grab;
+      touch-action: none;
     }
+    .side-image-frame.dragging { cursor: grabbing; }
+    .side-image-frame:not(.hidden)::after {
+      content: '이미지를 드래그해 위치 조절';
+      position: absolute;
+      left: 50%;
+      bottom: 8px;
+      transform: translateX(-50%);
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(20, 18, 22, 0.48);
+      color: #fff;
+      font-size: 10px;
+      line-height: 1;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+      z-index: 3;
+    }
+    .side-image-frame:hover::after,
+    .side-image-frame.dragging::after { opacity: .9; }
     .side-image-frame img {
       position: absolute;
       inset: 0;
@@ -657,7 +680,7 @@
 
       <section class="section">
         <h2>5. 발췌 이미지</h2>
-        <p class="desc">배경과 별개로 발췌 옆에 이미지를 넣을 수 있음. 배치를 바꾸면 세로/가로 이미지 레이아웃으로 자동 전환됨.</p>
+        <p class="desc">배경과 별개로 발췌 옆에 이미지를 넣을 수 있음. 큰 이미지는 카드에 맞는 크기로 자동 조절되고, 미리보기 이미지를 직접 드래그해 보이는 부분을 옮길 수 있음.</p>
         <div style="margin-top:4px;">
           <label for="sideImageInput">이미지 첨부</label>
           <input id="sideImageInput" type="file" accept="image/*">
@@ -864,6 +887,8 @@
       speakers: [],
       bgImageData: '',
       sideImageData: '',
+      sideImageNaturalWidth: 0,
+      sideImageNaturalHeight: 0,
       customFontData: '',
       customFontName: '',
       customFontFace: null,
@@ -939,6 +964,10 @@
       refs.bgImageInput.addEventListener('change', onBgImageUpload);
       refs.sideImageInput.addEventListener('change', onSideImageUpload);
       refs.removeSideImageBtn.addEventListener('click', removeSideImage);
+      refs.sideImageFrame.addEventListener('pointerdown', startSideImageDrag);
+      refs.sideImageFrame.addEventListener('pointermove', moveSideImageDrag);
+      refs.sideImageFrame.addEventListener('pointerup', endSideImageDrag);
+      refs.sideImageFrame.addEventListener('pointercancel', endSideImageDrag);
       refs.customFontInput.addEventListener('change', onCustomFontUpload);
       refs.addSpeakerBtn.addEventListener('click', addSpeaker);
       refs.resetSpeakersBtn.addEventListener('click', () => resetSpeakers());
@@ -1089,11 +1118,52 @@
       reader.readAsDataURL(file);
     }
 
+    function clampNumber(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function getRecommendedSideImageSize(naturalWidth, naturalHeight, placement = refs.sideImagePlacement.value) {
+      const portraitPlacement = placement === 'left' || placement === 'right';
+      const ratio = naturalWidth > 0 && naturalHeight > 0 ? naturalWidth / naturalHeight : 1;
+      const cardWidth = refs.exportTarget?.clientWidth || 640;
+      const cardHeight = refs.exportTarget?.clientHeight || 800;
+      const padding = Number(refs.cardPadding.value) || 34;
+      const availableWidth = Math.max(220, cardWidth - padding * 2);
+      const availableHeight = Math.max(320, cardHeight - padding * 2);
+
+      if (portraitPlacement) {
+        // 좌/우 이미지는 본문을 과하게 밀어내지 않도록 카드 폭의 약 1/3까지만 사용.
+        const width = Math.round(Math.min(190, availableWidth * 0.34));
+        const naturalHeightForWidth = ratio > 0 ? width / ratio : 280;
+        const height = Math.round(clampNumber(naturalHeightForWidth, 200, Math.min(330, availableHeight * 0.52)));
+        return { width, height };
+      }
+
+      // 위/아래 이미지는 가로 폭을 활용하되 카드 높이의 약 1/4 정도로 제한.
+      const width = Math.round(Math.min(500, availableWidth));
+      const naturalHeightForWidth = ratio > 0 ? width / ratio : 200;
+      const height = Math.round(clampNumber(naturalHeightForWidth, 130, Math.min(230, availableHeight * 0.30)));
+      return { width, height };
+    }
+
+    function applyRecommendedSideImageSize() {
+      if (!state.sideImageData) return;
+      const size = getRecommendedSideImageSize(state.sideImageNaturalWidth, state.sideImageNaturalHeight);
+      refs.sideImageWidth.value = size.width;
+      refs.sideImageHeight.value = size.height;
+      $('sideImageWidthVal').textContent = size.width;
+      $('sideImageHeightVal').textContent = size.height;
+    }
+
     function updateSideImagePlacementControls() {
       const vertical = refs.sideImagePlacement.value === 'left' || refs.sideImagePlacement.value === 'right';
       const maxWidth = vertical ? 340 : 560;
       refs.sideImageWidth.max = maxWidth;
-      if (Number(refs.sideImageWidth.value) > maxWidth) refs.sideImageWidth.value = maxWidth;
+      if (state.sideImageData) {
+        applyRecommendedSideImageSize();
+      } else if (Number(refs.sideImageWidth.value) > maxWidth) {
+        refs.sideImageWidth.value = maxWidth;
+      }
       $('sideImageWidthVal').textContent = refs.sideImageWidth.value;
       render();
     }
@@ -1103,15 +1173,82 @@
       if (!file) return;
       const reader = new FileReader();
       reader.onload = () => {
-        state.sideImageData = reader.result;
-        render();
-        setStatus(`발췌 이미지를 첨부했어. (${file.name})`);
+        const dataUrl = reader.result;
+        const probe = new Image();
+        probe.onload = () => {
+          state.sideImageData = dataUrl;
+          state.sideImageNaturalWidth = probe.naturalWidth || 0;
+          state.sideImageNaturalHeight = probe.naturalHeight || 0;
+          refs.sideImageZoom.value = 100;
+          refs.sideImagePosX.value = 50;
+          refs.sideImagePosY.value = 50;
+          $('sideImageZoomVal').textContent = '100';
+          $('sideImagePosXVal').textContent = '50';
+          $('sideImagePosYVal').textContent = '50';
+          applyRecommendedSideImageSize();
+          render();
+          setStatus(`발췌 이미지를 카드에 맞게 자동 조절했어. 미리보기에서 이미지를 드래그해 위치를 바꿀 수 있어. (${file.name})`);
+        };
+        probe.onerror = () => {
+          state.sideImageData = dataUrl;
+          state.sideImageNaturalWidth = 0;
+          state.sideImageNaturalHeight = 0;
+          applyRecommendedSideImageSize();
+          render();
+          setStatus(`발췌 이미지를 첨부했어. 미리보기에서 드래그해 위치를 바꿀 수 있어. (${file.name})`);
+        };
+        probe.src = dataUrl;
       };
       reader.readAsDataURL(file);
     }
 
+    let sideImageDrag = null;
+
+    function startSideImageDrag(event) {
+      if (!state.sideImageData || event.button > 0) return;
+      event.preventDefault();
+      const rect = refs.sideImageFrame.getBoundingClientRect();
+      sideImageDrag = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        startPosX: Number(refs.sideImagePosX.value) || 50,
+        startPosY: Number(refs.sideImagePosY.value) || 50,
+        width: Math.max(1, rect.width),
+        height: Math.max(1, rect.height),
+      };
+      refs.sideImageFrame.classList.add('dragging');
+      try { refs.sideImageFrame.setPointerCapture(event.pointerId); } catch (_) {}
+    }
+
+    function moveSideImageDrag(event) {
+      if (!sideImageDrag || sideImageDrag.pointerId !== event.pointerId) return;
+      event.preventDefault();
+      const dx = event.clientX - sideImageDrag.startX;
+      const dy = event.clientY - sideImageDrag.startY;
+      // 실제 이미지를 잡아 움직이는 느낌이 나도록 포인터 이동 반대 방향으로 crop 기준점을 이동.
+      const nextX = clampNumber(sideImageDrag.startPosX - (dx / sideImageDrag.width) * 100, 0, 100);
+      const nextY = clampNumber(sideImageDrag.startPosY - (dy / sideImageDrag.height) * 100, 0, 100);
+      refs.sideImagePosX.value = Math.round(nextX);
+      refs.sideImagePosY.value = Math.round(nextY);
+      $('sideImagePosXVal').textContent = refs.sideImagePosX.value;
+      $('sideImagePosYVal').textContent = refs.sideImagePosY.value;
+      const pos = `${refs.sideImagePosX.value}% ${refs.sideImagePosY.value}%`;
+      refs.sideImagePreview.style.objectPosition = pos;
+      refs.sideImagePreview.style.transformOrigin = pos;
+    }
+
+    function endSideImageDrag(event) {
+      if (!sideImageDrag || sideImageDrag.pointerId !== event.pointerId) return;
+      try { refs.sideImageFrame.releasePointerCapture(event.pointerId); } catch (_) {}
+      refs.sideImageFrame.classList.remove('dragging');
+      sideImageDrag = null;
+    }
+
     function removeSideImage() {
       state.sideImageData = '';
+      state.sideImageNaturalWidth = 0;
+      state.sideImageNaturalHeight = 0;
       refs.sideImageInput.value = '';
       render();
       setStatus('발췌 이미지를 제거했어.');
@@ -1507,6 +1644,7 @@
       refs.cardLayout.className = 'card-layout';
       if (!hasImage) {
         refs.cardLayout.classList.add('no-side-image');
+        refs.sideImageFrame.classList.remove('dragging');
         refs.sideImagePreview.removeAttribute('src');
         return;
       }
@@ -1523,7 +1661,9 @@
 
       refs.sideImagePreview.src = state.sideImageData;
       refs.sideImagePreview.style.objectFit = refs.sideImageFit.value;
-      refs.sideImagePreview.style.objectPosition = `${refs.sideImagePosX.value}% ${refs.sideImagePosY.value}%`;
+      const sideImagePosition = `${refs.sideImagePosX.value}% ${refs.sideImagePosY.value}%`;
+      refs.sideImagePreview.style.objectPosition = sideImagePosition;
+      refs.sideImagePreview.style.transformOrigin = sideImagePosition;
       refs.sideImagePreview.style.transform = `scale(${Number(refs.sideImageZoom.value) / 100})`;
     }
 
@@ -1842,6 +1982,16 @@
       state.speakers = item.speakers?.length ? item.speakers.map((speaker, index) => ({ ...speaker, side: speaker.side || (index % 2 ? 'right' : 'left') })) : JSON.parse(JSON.stringify(DEFAULT_SPEAKERS));
       state.bgImageData = item.bgImageData || '';
       state.sideImageData = item.sideImageData || '';
+      state.sideImageNaturalWidth = 0;
+      state.sideImageNaturalHeight = 0;
+      if (state.sideImageData) {
+        const sideProbe = new Image();
+        sideProbe.onload = () => {
+          state.sideImageNaturalWidth = sideProbe.naturalWidth || 0;
+          state.sideImageNaturalHeight = sideProbe.naturalHeight || 0;
+        };
+        sideProbe.src = state.sideImageData;
+      }
       await applyCustomFont(item.customFontData || '', item.customFontName || '사용자 폰트');
       const s = item.settings || {};
       refs.presetSelect.value = s.preset || 'princess';
@@ -1964,6 +2114,8 @@
       state.editingId = null;
       state.bgImageData = '';
       state.sideImageData = '';
+      state.sideImageNaturalWidth = 0;
+      state.sideImageNaturalHeight = 0;
       state.customFontData = '';
       state.customFontName = '';
       if (state.customFontFace) { document.fonts.delete(state.customFontFace); state.customFontFace = null; }
