@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SERENDIPITY EXCERPT MAKER</title>
+  <title>Dearly Excerpt — Excerpt Maker</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
     :root {
@@ -333,6 +333,37 @@
       min-height: 18px;
     }
 
+    .notice {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #fff6fa;
+      border: 1px solid #f1d7e4;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .file-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      background: white;
+      color: var(--text);
+      border: 1px solid #e8d3dc;
+    }
+    .empty-state {
+      padding: 18px 12px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      border: 1px dashed #ead2dd;
+      border-radius: 14px;
+    }
+
     .hidden { display: none !important; }
 
     @media (max-width: 1120px) {
@@ -346,27 +377,28 @@
   <div class="app">
     <aside class="sidebar">
       <div class="brand">
-        <h1>SERENDIPITY EXCERPT</h1>
-        <p>원문 전체 보관 없이, 발췌하고 싶은 부분만 넣어서 꾸미고 저장하는 개인용 발췌기.</p>
+        <h1>Dearly Excerpt</h1>
+        <p>원하는 문장만 넣어 꾸미고 이미지로 저장하는 발췌 메이커. 입력한 데이터는 기본적으로 현재 브라우저에만 저장됨.</p>
       </div>
 
       <section class="section">
         <h2>1. 발췌문</h2>
-        <p class="desc">화자 표기는 <strong>이름:</strong> 형식으로 입력하면 자동 구분됨. 예) <code>우준희: 네가 여기 있으면 됐어.</code></p>
+        <p class="desc">화자 표기는 <strong>이름:</strong> 형식으로 입력하면 자동 구분됨. 예) <code>A: 오늘은 조금 천천히 가자.</code></p>
         <label for="excerptInput">발췌문 입력</label>
-        <textarea id="excerptInput" placeholder="발췌하고 싶은 부분만 입력해줘.&#10;&#10;우준희: 네가 여기 있으면 됐어.&#10;혜교: 그럼 계속 있을게.&#10;그는 잠시 대답하지 않았다."></textarea>
+        <textarea id="excerptInput" placeholder="발췌하고 싶은 부분만 입력해줘.&#10;&#10;A: 오늘은 조금 천천히 가자.&#10;B: 그래, 서두르지 말자.&#10;창밖으로 늦은 오후의 빛이 번졌다."></textarea>
         <div class="inline"><input type="checkbox" id="quoteMode" checked><label for="quoteMode" style="margin:0;font-weight:500;">따옴표 자동 강조 감지 (“ ”, \" \" 포함)</label></div>
       </section>
 
       <section class="section">
-        <h2>2. 카드 정보</h2>
+        <h2>2. 카드 정보 <span style="font-size:11px;color:var(--muted);font-weight:500;">(선택)</span></h2>
+        <p class="desc">전부 비워도 됨. 입력된 항목만 결과 카드에 표시됨.</p>
         <div class="grid2">
-          <div><label for="titleInput">제목</label><input id="titleInput" type="text" placeholder="처음으로 돌아갈 곳이 생긴 날"></div>
+          <div><label for="titleInput">제목</label><input id="titleInput" type="text" placeholder="비워두면 표시되지 않음"></div>
           <div><label for="dateInput">날짜</label><input id="dateInput" type="date"></div>
         </div>
         <div class="grid2" style="margin-top:10px;">
-          <div><label for="locationInput">장소</label><input id="locationInput" type="text" placeholder="우리 집"></div>
-          <div><label for="pairInput">시리즈/페어명</label><input id="pairInput" type="text" placeholder="BLANC × ELPIS"></div>
+          <div><label for="locationInput">장소</label><input id="locationInput" type="text" placeholder="선택 입력"></div>
+          <div><label for="pairInput">시리즈/페어명</label><input id="pairInput" type="text" placeholder="선택 입력"></div>
         </div>
         <div style="margin-top:10px;"><label for="tagsInput">태그</label><input id="tagsInput" type="text" placeholder="#일상 #가이딩 #고백"></div>
         <div style="margin-top:10px;"><label for="memoInput">짧은 메모</label><textarea id="memoInput" placeholder="준희가 처음으로 먼저 붙잡았던 날" style="min-height:90px;"></textarea></div>
@@ -377,7 +409,7 @@
         <p class="desc">입력한 화자 이름에 맞춰 색을 자동 적용함.</p>
         <div id="speakerList"></div>
         <div class="grid3">
-          <div style="grid-column: span 2;"><label for="speakerName">화자 이름</label><input id="speakerName" type="text" placeholder="우준희"></div>
+          <div style="grid-column: span 2;"><label for="speakerName">화자 이름</label><input id="speakerName" type="text" placeholder="A"></div>
           <div><label for="speakerColor">색상</label><input id="speakerColor" type="color" value="#9cc8ff" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff; padding:4px;"></div>
         </div>
         <div class="btn-row">
@@ -498,7 +530,15 @@
             </select>
           </div>
           <div>
-            <label for="watermarkInput">푸터 워터마크</label><input id="watermarkInput" type="text" placeholder="SERENDIPITY"></div>
+            <label for="watermarkInput">푸터 워터마크</label><input id="watermarkInput" type="text" placeholder="비워두면 표시되지 않음"></div>
+        </div>
+        <div style="margin-top:10px;">
+          <label for="exportScale">PNG 화질</label>
+          <select id="exportScale">
+            <option value="2">고화질 2×</option>
+            <option value="3">초고화질 3×</option>
+            <option value="1">기본 1×</option>
+          </select>
         </div>
         <div class="btn-row">
           <button type="button" id="saveBtn">현재 발췌 저장</button>
@@ -509,7 +549,20 @@
       </section>
 
       <section class="section">
-        <h2>7. 저장된 발췌</h2>
+        <h2>7. 백업 / 복원</h2>
+        <p class="desc">브라우저 데이터가 지워질 수 있으니 배포판에서는 주기적으로 JSON 백업을 권장함.</p>
+        <div class="btn-row">
+          <button type="button" class="secondary" id="backupExportBtn">JSON 내보내기</button>
+          <label class="file-button" for="backupImportInput">JSON 가져오기</label>
+          <input id="backupImportInput" type="file" accept="application/json,.json" class="hidden">
+          <button type="button" class="danger" id="clearLibraryBtn">전체 기록 삭제</button>
+        </div>
+        <div class="notice" style="margin-top:10px;">서버로 자동 전송하지 않으며, 저장한 발췌와 배경 이미지는 현재 브라우저의 로컬 저장소에 보관됨.</div>
+      </section>
+
+      <section class="section">
+        <h2>8. 저장된 발췌</h2>
+        <div style="margin-bottom:10px;"><label for="librarySearch">검색</label><input id="librarySearch" type="text" placeholder="제목, 본문, 태그, 시리즈명으로 검색"></div>
         <div id="libraryList"></div>
       </section>
     </aside>
@@ -523,7 +576,7 @@
           <div class="card-inner" id="cardInner">
             <div class="card-top">
               <div class="eyebrow" id="eyebrow"></div>
-              <h2 class="card-title" id="cardTitle">제목을 입력해줘</h2>
+              <h2 class="card-title" id="cardTitle"></h2>
               <div class="card-memo" id="cardMemo"></div>
             </div>
             <div class="excerpt-content" id="excerptContent"></div>
@@ -536,11 +589,7 @@
 
   <script>
     const STORAGE_KEY = 'serendipity_excerpt_library_v1';
-    const DEFAULT_SPEAKERS = [
-      { id: crypto.randomUUID(), name: '우준희', color: '#9cc8ff' },
-      { id: crypto.randomUUID(), name: '혜교', color: '#f4a8c6' },
-      { id: crypto.randomUUID(), name: '채아', color: '#d9b9ff' },
-    ];
+    const DEFAULT_SPEAKERS = [];
 
     const state = {
       speakers: [],
@@ -560,7 +609,8 @@
       bgType: $('bgType'), contentBoxMode: $('contentBoxMode'), bgColor1: $('bgColor1'), bgColor2: $('bgColor2'), bgImageInput: $('bgImageInput'),
       bgFit: $('bgFit'), bgPos: $('bgPos'), bgScale: $('bgScale'), bgOpacity: $('bgOpacity'), bgBlur: $('bgBlur'), bgBrightness: $('bgBrightness'),
       overlayColor: $('overlayColor'), overlayOpacity: $('overlayOpacity'), bgImageControls: $('bgImageControls'),
-      sizePreset: $('sizePreset'), watermarkInput: $('watermarkInput'), saveBtn: $('saveBtn'), exportBtn: $('exportBtn'), newBtn: $('newBtn'), statusText: $('statusText'),
+      sizePreset: $('sizePreset'), watermarkInput: $('watermarkInput'), exportScale: $('exportScale'), saveBtn: $('saveBtn'), exportBtn: $('exportBtn'), newBtn: $('newBtn'), statusText: $('statusText'),
+      backupExportBtn: $('backupExportBtn'), backupImportInput: $('backupImportInput'), clearLibraryBtn: $('clearLibraryBtn'), librarySearch: $('librarySearch'),
       exportTarget: $('exportTarget'), cardBg: $('cardBg'), cardOverlay: $('cardOverlay'), contentBox: $('contentBox'), cardInner: $('cardInner'),
       eyebrow: $('eyebrow'), cardTitle: $('cardTitle'), cardMemo: $('cardMemo'), excerptContent: $('excerptContent'), footerNote: $('footerNote'), libraryList: $('libraryList')
     };
@@ -600,6 +650,10 @@
       refs.saveBtn.addEventListener('click', saveCurrentEntry);
       refs.exportBtn.addEventListener('click', exportPng);
       refs.newBtn.addEventListener('click', clearForm);
+      refs.backupExportBtn.addEventListener('click', exportBackup);
+      refs.backupImportInput.addEventListener('change', importBackup);
+      refs.clearLibraryBtn.addEventListener('click', clearLibrary);
+      refs.librarySearch.addEventListener('input', renderLibrary);
     }
 
     function setStatus(msg) {
@@ -610,7 +664,7 @@
       state.speakers = JSON.parse(JSON.stringify(DEFAULT_SPEAKERS));
       renderSpeakerList();
       render();
-      if (!silent) setStatus('기본 화자를 복원했어.');
+      if (!silent) setStatus('화자 설정을 초기화했어.');
     }
 
     function renderSpeakerList() {
@@ -858,9 +912,13 @@
 
     function render() {
       renderEyebrow();
-      refs.cardTitle.textContent = refs.titleInput.value.trim() || '제목을 입력해줘';
+      const titleValue = refs.titleInput.value.trim();
+      refs.cardTitle.textContent = titleValue;
+      refs.cardTitle.style.display = titleValue ? 'block' : 'none';
       refs.cardMemo.textContent = refs.memoInput.value.trim();
       refs.cardMemo.style.display = refs.memoInput.value.trim() ? 'block' : 'none';
+      const hasTopInfo = Boolean(titleValue || refs.dateInput.value || refs.locationInput.value.trim() || refs.pairInput.value.trim() || refs.tagsInput.value.trim() || refs.memoInput.value.trim());
+      refs.cardTitle.parentElement.style.display = hasTopInfo ? 'block' : 'none';
       refs.footerNote.textContent = refs.watermarkInput.value.trim();
       refs.footerNote.style.display = refs.watermarkInput.value.trim() ? 'block' : 'none';
 
@@ -915,6 +973,7 @@
           overlayOpacity: refs.overlayOpacity.value,
           sizePreset: refs.sizePreset.value,
           watermark: refs.watermarkInput.value,
+          exportScale: refs.exportScale.value,
         },
         savedAt: new Date().toISOString(),
       };
@@ -926,7 +985,13 @@
       const existingIndex = library.findIndex(item => item.id === data.id);
       if (existingIndex >= 0) library[existingIndex] = data;
       else library.unshift(data);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
+      } catch (err) {
+        console.error(err);
+        setStatus('저장 공간이 부족해. 큰 배경 이미지를 줄이거나 JSON 백업 후 기록을 정리해줘.');
+        return;
+      }
       state.editingId = data.id;
       renderLibrary();
       setStatus('현재 발췌를 저장했어.');
@@ -939,12 +1004,14 @@
 
     function renderLibrary() {
       const library = getLibrary();
+      const q = (refs.librarySearch?.value || '').trim().toLowerCase();
+      const filtered = q ? library.filter(item => [item.title, item.excerpt, item.tags, item.pair, item.location, item.memo].some(v => (v || '').toLowerCase().includes(q))) : library;
       refs.libraryList.innerHTML = '';
-      if (library.length === 0) {
-        refs.libraryList.innerHTML = '<p class="desc" style="margin:0;">아직 저장된 발췌가 없어.</p>';
+      if (filtered.length === 0) {
+        refs.libraryList.innerHTML = `<div class="empty-state">${library.length ? '검색 결과가 없어.' : '아직 저장된 발췌가 없어.'}</div>`;
         return;
       }
-      library.forEach(item => {
+      filtered.forEach(item => {
         const card = document.createElement('div');
         card.className = 'library-card';
         const date = item.date ? formatDateValue(item.date) : '날짜 없음';
@@ -1007,6 +1074,7 @@
       refs.overlayOpacity.value = s.overlayOpacity || 0;
       refs.sizePreset.value = s.sizePreset || '4:5';
       refs.watermarkInput.value = s.watermark || '';
+      refs.exportScale.value = s.exportScale || '2';
       ['baseFontSize','lineHeight','cardRadius','cardPadding','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
       renderSpeakerList();
       updateBgControlsVisibility();
@@ -1031,6 +1099,55 @@
       setStatus('저장된 발췌를 삭제했어.');
     }
 
+    function exportBackup() {
+      const payload = {
+        app: 'Dearly Excerpt',
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        entries: getLibrary(),
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0,10);
+      link.href = url;
+      link.download = `dearly-excerpt-backup-${stamp}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      setStatus('JSON 백업 파일을 만들었어.');
+    }
+
+    function importBackup(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          const entries = Array.isArray(parsed) ? parsed : parsed.entries;
+          if (!Array.isArray(entries)) throw new Error('invalid backup');
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+          state.editingId = null;
+          renderLibrary();
+          setStatus(`${entries.length}개의 발췌를 복원했어.`);
+        } catch (err) {
+          console.error(err);
+          setStatus('가져올 수 없는 JSON 파일이야. Dearly Excerpt 백업 파일인지 확인해줘.');
+        } finally {
+          refs.backupImportInput.value = '';
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearLibrary() {
+      if (!confirm('저장된 발췌를 모두 삭제할까? 이 작업은 되돌릴 수 없어.')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state.editingId = null;
+      renderLibrary();
+      setStatus('저장된 발췌를 모두 삭제했어.');
+    }
+
     function clearForm() {
       state.editingId = null;
       state.bgImageData = '';
@@ -1040,7 +1157,7 @@
       refs.titleInput.value = '';
       refs.dateInput.value = '';
       refs.locationInput.value = '';
-      refs.pairInput.value = 'BLANC × ELPIS';
+      refs.pairInput.value = '';
       refs.tagsInput.value = '';
       refs.memoInput.value = '';
       refs.presetSelect.value = 'princess';
@@ -1063,7 +1180,8 @@
       refs.overlayColor.value = '#ffffff';
       refs.overlayOpacity.value = 0;
       refs.sizePreset.value = '4:5';
-      refs.watermarkInput.value = 'SERENDIPITY';
+      refs.watermarkInput.value = '';
+      refs.exportScale.value = '2';
       resetSpeakers(true);
       ['baseFontSize','lineHeight','cardRadius','cardPadding','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
       updateBgControlsVisibility();
@@ -1074,12 +1192,13 @@
     async function exportPng() {
       setStatus('PNG를 생성하는 중이야...');
       try {
+        if (typeof html2canvas !== 'function') throw new Error('html2canvas not loaded');
         const target = refs.exportTarget;
         const canvas = await html2canvas(target, {
           useCORS: true,
           allowTaint: true,
           backgroundColor: null,
-          scale: 2,
+          scale: Number(refs.exportScale.value || 2),
         });
         const link = document.createElement('a');
         link.download = `${(refs.titleInput.value || 'excerpt').replace(/[\\/:*?"<>|]/g, '_')}.png`;
