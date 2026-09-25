@@ -6,6 +6,8 @@
   <title>Dearly Excerpt — Excerpt Maker</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Hahmlet:wght@300;400;500;600;700&family=Nanum+Myeongjo:wght@400;700;800&family=Song+Myung&display=swap');
+
     :root {
       --bg: #fff8fb;
       --panel: #ffffff;
@@ -235,6 +237,45 @@
       padding: 34px;
     }
 
+    .card-layout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      width: 100%;
+      min-width: 0;
+    }
+    .card-layout.image-left { flex-direction: row; }
+    .card-layout.image-right { flex-direction: row-reverse; }
+    .card-layout.image-top { flex-direction: column; }
+    .card-layout.image-bottom { flex-direction: column-reverse; }
+    .card-layout.no-side-image { display: block; }
+
+    .side-image-frame {
+      position: relative;
+      flex: 0 0 auto;
+      overflow: hidden;
+      background: rgba(255,255,255,0.28);
+      border: 1px solid rgba(255,255,255,0.38);
+      box-shadow: 0 10px 24px rgba(80, 56, 67, 0.08);
+    }
+    .side-image-frame img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      max-width: none;
+      transform-origin: center center;
+      user-select: none;
+      pointer-events: none;
+    }
+    .card-text-panel {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: 100%;
+    }
+
     .card-top {
       margin-bottom: 20px;
     }
@@ -438,12 +479,23 @@
           <div>
             <label for="fontSelect">폰트 계열</label>
             <select id="fontSelect">
-              <option value="Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif">Pretendard/Sans</option>
-              <option value="Georgia, Times New Roman, serif">Serif</option>
+              <option value="Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif">Pretendard / 기본 고딕</option>
+              <option value="'Gowun Dodum', Pretendard, sans-serif">고운돋움</option>
+              <option value="'Gowun Batang', 'Noto Serif KR', serif">고운바탕</option>
+              <option value="'Nanum Myeongjo', 'Noto Serif KR', serif">나눔명조</option>
+              <option value="'Song Myung', 'Noto Serif KR', serif">송명</option>
+              <option value="'Hahmlet', 'Noto Serif KR', serif">함렛</option>
+              <option value="Georgia, 'Times New Roman', serif">Classic Serif</option>
               <option value="'Trebuchet MS', 'Noto Sans KR', sans-serif">Soft Sans</option>
               <option value="'Comic Sans MS', 'Apple SD Gothic Neo', sans-serif">Diary</option>
+              <option value="'DearlyCustomFont', Pretendard, sans-serif" id="customFontOption" disabled>사용자 업로드 폰트</option>
             </select>
           </div>
+        </div>
+        <div style="margin-top:10px;">
+          <label for="customFontInput">사용자 폰트 업로드</label>
+          <input id="customFontInput" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2">
+          <p class="desc" id="customFontStatus" style="margin:6px 0 0;">TTF · OTF · WOFF · WOFF2 지원. 업로드한 폰트는 현재 발췌 저장 데이터에 포함할 수 있음.</p>
         </div>
         <div class="grid2" style="margin-top:10px;">
           <div><label for="baseFontSize">본문 글자 크기 <span id="baseFontSizeVal">18</span>px</label><input id="baseFontSize" type="range" min="14" max="28" value="18"></div>
@@ -460,7 +512,50 @@
       </section>
 
       <section class="section">
-        <h2>5. 배경</h2>
+        <h2>5. 발췌 이미지</h2>
+        <p class="desc">배경과 별개로 발췌 옆에 이미지를 넣을 수 있음. 배치를 바꾸면 세로/가로 이미지 레이아웃으로 자동 전환됨.</p>
+        <div style="margin-top:4px;">
+          <label for="sideImageInput">이미지 첨부</label>
+          <input id="sideImageInput" type="file" accept="image/*">
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div>
+            <label for="sideImagePlacement">배치</label>
+            <select id="sideImagePlacement">
+              <option value="left">왼쪽 · 세로</option>
+              <option value="right">오른쪽 · 세로</option>
+              <option value="top">위 · 가로</option>
+              <option value="bottom">아래 · 가로</option>
+            </select>
+          </div>
+          <div>
+            <label for="sideImageFit">맞춤 방식</label>
+            <select id="sideImageFit">
+              <option value="cover">영역 채우기</option>
+              <option value="contain">이미지 전체</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div><label for="sideImageWidth">이미지 넓이 <span id="sideImageWidthVal">220</span>px</label><input id="sideImageWidth" type="range" min="80" max="560" value="220"></div>
+          <div><label for="sideImageHeight">이미지 높이 <span id="sideImageHeightVal">360</span>px</label><input id="sideImageHeight" type="range" min="80" max="900" value="360"></div>
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div><label for="sideImageZoom">이미지 확대 <span id="sideImageZoomVal">100</span>%</label><input id="sideImageZoom" type="range" min="50" max="300" value="100"></div>
+          <div><label for="sideImageRadius">모서리 <span id="sideImageRadiusVal">18</span>px</label><input id="sideImageRadius" type="range" min="0" max="60" value="18"></div>
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div><label for="sideImagePosX">가로 위치 <span id="sideImagePosXVal">50</span>%</label><input id="sideImagePosX" type="range" min="0" max="100" value="50"></div>
+          <div><label for="sideImagePosY">세로 위치 <span id="sideImagePosYVal">50</span>%</label><input id="sideImagePosY" type="range" min="0" max="100" value="50"></div>
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div><label for="sideImageGap">본문과 간격 <span id="sideImageGapVal">22</span>px</label><input id="sideImageGap" type="range" min="0" max="60" value="22"></div>
+          <div style="display:flex;align-items:end;"><button type="button" class="secondary" id="removeSideImageBtn" style="width:100%;">이미지 제거</button></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>6. 배경</h2>
         <div class="grid2">
           <div>
             <label for="bgType">배경 종류</label>
@@ -521,7 +616,7 @@
       </section>
 
       <section class="section">
-        <h2>6. 출력 / 저장</h2>
+        <h2>7. 출력 / 저장</h2>
         <div class="grid2">
           <div>
             <label for="sizePreset">크기 프리셋</label>
@@ -552,7 +647,7 @@
       </section>
 
       <section class="section">
-        <h2>7. 백업 / 복원</h2>
+        <h2>8. 백업 / 복원</h2>
         <p class="desc">브라우저 데이터가 지워질 수 있으니 배포판에서는 주기적으로 JSON 백업을 권장함.</p>
         <div class="btn-row">
           <button type="button" class="secondary" id="backupExportBtn">JSON 내보내기</button>
@@ -564,7 +659,7 @@
       </section>
 
       <section class="section">
-        <h2>8. 저장된 발췌</h2>
+        <h2>9. 저장된 발췌</h2>
         <div style="margin-bottom:10px;"><label for="librarySearch">검색</label><input id="librarySearch" type="text" placeholder="제목, 본문, 태그, 시리즈명으로 검색"></div>
         <div id="libraryList"></div>
       </section>
@@ -577,13 +672,20 @@
           <div class="card-overlay-layer" id="cardOverlay"></div>
           <div class="card-content-box" id="contentBox"></div>
           <div class="card-inner" id="cardInner">
-            <div class="card-top">
-              <div class="eyebrow" id="eyebrow"></div>
-              <h2 class="card-title" id="cardTitle"></h2>
-              <div class="card-memo" id="cardMemo"></div>
+            <div class="card-layout no-side-image" id="cardLayout">
+              <div class="side-image-frame hidden" id="sideImageFrame">
+                <img id="sideImagePreview" alt="발췌 이미지">
+              </div>
+              <div class="card-text-panel" id="cardTextPanel">
+                <div class="card-top">
+                  <div class="eyebrow" id="eyebrow"></div>
+                  <h2 class="card-title" id="cardTitle"></h2>
+                  <div class="card-memo" id="cardMemo"></div>
+                </div>
+                <div class="excerpt-content" id="excerptContent"></div>
+                <div class="footer-note" id="footerNote"></div>
+              </div>
             </div>
-            <div class="excerpt-content" id="excerptContent"></div>
-            <div class="footer-note" id="footerNote"></div>
           </div>
         </div>
       </div>
@@ -597,6 +699,10 @@
     const state = {
       speakers: [],
       bgImageData: '',
+      sideImageData: '',
+      customFontData: '',
+      customFontName: '',
+      customFontFace: null,
       editingId: null,
     };
 
@@ -607,14 +713,16 @@
       locationInput: $('locationInput'), pairInput: $('pairInput'), tagsInput: $('tagsInput'), memoInput: $('memoInput'), creatorPresetBtn: $('creatorPresetBtn'),
       speakerName: $('speakerName'), speakerColor: $('speakerColor'), speakerList: $('speakerList'),
       addSpeakerBtn: $('addSpeakerBtn'), resetSpeakersBtn: $('resetSpeakersBtn'),
-      presetSelect: $('presetSelect'), fontSelect: $('fontSelect'), baseFontSize: $('baseFontSize'), lineHeight: $('lineHeight'),
+      presetSelect: $('presetSelect'), fontSelect: $('fontSelect'), customFontInput: $('customFontInput'), customFontOption: $('customFontOption'), customFontStatus: $('customFontStatus'), baseFontSize: $('baseFontSize'), lineHeight: $('lineHeight'),
       cardRadius: $('cardRadius'), cardPadding: $('cardPadding'), bodyColor: $('bodyColor'), accentColor: $('accentColor'),
+      sideImageInput: $('sideImageInput'), sideImagePlacement: $('sideImagePlacement'), sideImageFit: $('sideImageFit'), sideImageWidth: $('sideImageWidth'), sideImageHeight: $('sideImageHeight'), sideImageZoom: $('sideImageZoom'), sideImageRadius: $('sideImageRadius'), sideImagePosX: $('sideImagePosX'), sideImagePosY: $('sideImagePosY'), sideImageGap: $('sideImageGap'), removeSideImageBtn: $('removeSideImageBtn'),
       bgType: $('bgType'), contentBoxMode: $('contentBoxMode'), bgColor1: $('bgColor1'), bgColor2: $('bgColor2'), bgImageInput: $('bgImageInput'),
       bgFit: $('bgFit'), bgPos: $('bgPos'), bgScale: $('bgScale'), bgOpacity: $('bgOpacity'), bgBlur: $('bgBlur'), bgBrightness: $('bgBrightness'),
       overlayColor: $('overlayColor'), overlayOpacity: $('overlayOpacity'), bgImageControls: $('bgImageControls'),
       sizePreset: $('sizePreset'), watermarkInput: $('watermarkInput'), exportScale: $('exportScale'), saveBtn: $('saveBtn'), exportBtn: $('exportBtn'), newBtn: $('newBtn'), statusText: $('statusText'),
       backupExportBtn: $('backupExportBtn'), backupImportInput: $('backupImportInput'), clearLibraryBtn: $('clearLibraryBtn'), librarySearch: $('librarySearch'),
       exportTarget: $('exportTarget'), cardBg: $('cardBg'), cardOverlay: $('cardOverlay'), contentBox: $('contentBox'), cardInner: $('cardInner'),
+      cardLayout: $('cardLayout'), sideImageFrame: $('sideImageFrame'), sideImagePreview: $('sideImagePreview'), cardTextPanel: $('cardTextPanel'),
       eyebrow: $('eyebrow'), cardTitle: $('cardTitle'), cardMemo: $('cardMemo'), excerptContent: $('excerptContent'), footerNote: $('footerNote'), libraryList: $('libraryList')
     };
 
@@ -644,10 +752,21 @@
       refs.bgBlur.addEventListener('input', () => $('bgBlurVal').textContent = refs.bgBlur.value);
       refs.bgBrightness.addEventListener('input', () => $('bgBrightnessVal').textContent = refs.bgBrightness.value);
       refs.overlayOpacity.addEventListener('input', () => $('overlayOpacityVal').textContent = refs.overlayOpacity.value);
+      refs.sideImageWidth.addEventListener('input', () => $('sideImageWidthVal').textContent = refs.sideImageWidth.value);
+      refs.sideImageHeight.addEventListener('input', () => $('sideImageHeightVal').textContent = refs.sideImageHeight.value);
+      refs.sideImageZoom.addEventListener('input', () => $('sideImageZoomVal').textContent = refs.sideImageZoom.value);
+      refs.sideImageRadius.addEventListener('input', () => $('sideImageRadiusVal').textContent = refs.sideImageRadius.value);
+      refs.sideImagePosX.addEventListener('input', () => $('sideImagePosXVal').textContent = refs.sideImagePosX.value);
+      refs.sideImagePosY.addEventListener('input', () => $('sideImagePosYVal').textContent = refs.sideImagePosY.value);
+      refs.sideImageGap.addEventListener('input', () => $('sideImageGapVal').textContent = refs.sideImageGap.value);
 
       refs.presetSelect.addEventListener('change', applyPreset);
+      refs.sideImagePlacement.addEventListener('change', updateSideImagePlacementControls);
       refs.bgType.addEventListener('change', updateBgControlsVisibility);
       refs.bgImageInput.addEventListener('change', onBgImageUpload);
+      refs.sideImageInput.addEventListener('change', onSideImageUpload);
+      refs.removeSideImageBtn.addEventListener('click', removeSideImage);
+      refs.customFontInput.addEventListener('change', onCustomFontUpload);
       refs.addSpeakerBtn.addEventListener('click', addSpeaker);
       refs.resetSpeakersBtn.addEventListener('click', () => resetSpeakers());
       refs.creatorPresetBtn.addEventListener('click', applyCreatorPreset);
@@ -745,6 +864,74 @@
       setStatus(`화자 "${name}"를 추가했어.`);
     }
 
+    async function applyCustomFont(dataUrl, name = '사용자 폰트') {
+      if (!dataUrl) {
+        if (state.customFontFace) { document.fonts.delete(state.customFontFace); state.customFontFace = null; }
+        state.customFontData = '';
+        state.customFontName = '';
+        refs.customFontOption.disabled = true;
+        refs.customFontOption.textContent = '사용자 업로드 폰트';
+        refs.customFontStatus.textContent = 'TTF · OTF · WOFF · WOFF2 지원. 업로드한 폰트는 현재 발췌 저장 데이터에 포함할 수 있음.';
+        return;
+      }
+      try {
+        if (state.customFontFace) document.fonts.delete(state.customFontFace);
+        const face = new FontFace('DearlyCustomFont', `url(${dataUrl})`);
+        await face.load();
+        document.fonts.add(face);
+        state.customFontFace = face;
+        state.customFontData = dataUrl;
+        state.customFontName = name;
+        refs.customFontOption.disabled = false;
+        refs.customFontOption.textContent = `사용자 폰트 · ${name}`;
+        refs.customFontStatus.textContent = `${name} 적용 가능 · 저장 시 발췌 데이터에 포함됨.`;
+      } catch (err) {
+        console.error(err);
+        setStatus('폰트를 불러오지 못했어. TTF/OTF/WOFF/WOFF2 파일인지 확인해줘.');
+      }
+    }
+
+    function onCustomFontUpload(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        await applyCustomFont(reader.result, file.name);
+        refs.fontSelect.value = "'DearlyCustomFont', Pretendard, sans-serif";
+        render();
+        setStatus(`사용자 폰트 "${file.name}"를 적용했어.`);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateSideImagePlacementControls() {
+      const vertical = refs.sideImagePlacement.value === 'left' || refs.sideImagePlacement.value === 'right';
+      const maxWidth = vertical ? 340 : 560;
+      refs.sideImageWidth.max = maxWidth;
+      if (Number(refs.sideImageWidth.value) > maxWidth) refs.sideImageWidth.value = maxWidth;
+      $('sideImageWidthVal').textContent = refs.sideImageWidth.value;
+      render();
+    }
+
+    function onSideImageUpload(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        state.sideImageData = reader.result;
+        render();
+        setStatus(`발췌 이미지를 첨부했어. (${file.name})`);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeSideImage() {
+      state.sideImageData = '';
+      refs.sideImageInput.value = '';
+      render();
+      setStatus('발췌 이미지를 제거했어.');
+    }
+
     function updateBgControlsVisibility() {
       refs.bgImageControls.classList.toggle('hidden', refs.bgType.value !== 'image');
       render();
@@ -766,7 +953,7 @@
       const preset = refs.presetSelect.value;
       const presets = {
         princess: { bg1: '#fff8fb', bg2: '#ffe7f0', body: '#3e3038', accent: '#e98aac', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
-        novel: { bg1: '#fffdf7', bg2: '#f7efe5', body: '#443a35', accent: '#aa8f78', box: 'none', font: 'Georgia, Times New Roman, serif' },
+        novel: { bg1: '#fffdf7', bg2: '#f7efe5', body: '#443a35', accent: '#aa8f78', box: 'none', font: "Georgia, 'Times New Roman', serif" },
         letter: { bg1: '#fffaf5', bg2: '#ffe8ef', body: '#56454c', accent: '#d887a8', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
         minimal: { bg1: '#ffffff', bg2: '#f4f4f4', body: '#2f2f35', accent: '#8f8fc2', box: 'none', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
         dark: { bg1: '#2e2430', bg2: '#131217', body: '#fff7fb', accent: '#ffb5d0', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
@@ -922,6 +1109,32 @@
       if (refs.contentBoxMode.value === 'solid') refs.contentBox.classList.add('content-box-solid');
     }
 
+    function renderSideImage() {
+      const hasImage = Boolean(state.sideImageData);
+      refs.sideImageFrame.classList.toggle('hidden', !hasImage);
+      refs.cardLayout.className = 'card-layout';
+      if (!hasImage) {
+        refs.cardLayout.classList.add('no-side-image');
+        refs.sideImagePreview.removeAttribute('src');
+        return;
+      }
+
+      const placement = refs.sideImagePlacement.value;
+      refs.cardLayout.classList.add(`image-${placement}`);
+      refs.cardLayout.style.gap = refs.sideImageGap.value + 'px';
+
+      const width = Number(refs.sideImageWidth.value);
+      const height = Number(refs.sideImageHeight.value);
+      refs.sideImageFrame.style.width = width + 'px';
+      refs.sideImageFrame.style.height = height + 'px';
+      refs.sideImageFrame.style.borderRadius = refs.sideImageRadius.value + 'px';
+
+      refs.sideImagePreview.src = state.sideImageData;
+      refs.sideImagePreview.style.objectFit = refs.sideImageFit.value;
+      refs.sideImagePreview.style.objectPosition = `${refs.sideImagePosX.value}% ${refs.sideImagePosY.value}%`;
+      refs.sideImagePreview.style.transform = `scale(${Number(refs.sideImageZoom.value) / 100})`;
+    }
+
     function applySizing() {
       const preset = refs.sizePreset.value;
       refs.exportTarget.style.aspectRatio = '';
@@ -958,6 +1171,7 @@
       });
       renderExcerptContent();
       renderBackground();
+      renderSideImage();
       applySizing();
     }
 
@@ -974,6 +1188,9 @@
         memo: refs.memoInput.value,
         speakers: state.speakers,
         bgImageData: state.bgImageData,
+        sideImageData: state.sideImageData,
+        customFontData: state.customFontData,
+        customFontName: state.customFontName,
         settings: {
           preset: refs.presetSelect.value,
           font: refs.fontSelect.value,
@@ -983,6 +1200,15 @@
           cardPadding: refs.cardPadding.value,
           bodyColor: refs.bodyColor.value,
           accentColor: refs.accentColor.value,
+          sideImagePlacement: refs.sideImagePlacement.value,
+          sideImageFit: refs.sideImageFit.value,
+          sideImageWidth: refs.sideImageWidth.value,
+          sideImageHeight: refs.sideImageHeight.value,
+          sideImageZoom: refs.sideImageZoom.value,
+          sideImageRadius: refs.sideImageRadius.value,
+          sideImagePosX: refs.sideImagePosX.value,
+          sideImagePosY: refs.sideImagePosY.value,
+          sideImageGap: refs.sideImageGap.value,
           bgType: refs.bgType.value,
           contentBoxMode: refs.contentBoxMode.value,
           bgColor1: refs.bgColor1.value,
@@ -1061,7 +1287,7 @@
       });
     }
 
-    function loadEntry(id) {
+    async function loadEntry(id) {
       const item = getLibrary().find(v => v.id === id);
       if (!item) return;
       state.editingId = item.id;
@@ -1075,6 +1301,8 @@
       refs.memoInput.value = item.memo || '';
       state.speakers = item.speakers?.length ? item.speakers : JSON.parse(JSON.stringify(DEFAULT_SPEAKERS));
       state.bgImageData = item.bgImageData || '';
+      state.sideImageData = item.sideImageData || '';
+      await applyCustomFont(item.customFontData || '', item.customFontName || '사용자 폰트');
       const s = item.settings || {};
       refs.presetSelect.value = s.preset || 'princess';
       refs.fontSelect.value = s.font || refs.fontSelect.value;
@@ -1084,6 +1312,15 @@
       refs.cardPadding.value = s.cardPadding || 34;
       refs.bodyColor.value = s.bodyColor || '#3e3038';
       refs.accentColor.value = s.accentColor || '#e98aac';
+      refs.sideImagePlacement.value = s.sideImagePlacement || 'left';
+      refs.sideImageFit.value = s.sideImageFit || 'cover';
+      refs.sideImageWidth.value = s.sideImageWidth || 220;
+      refs.sideImageHeight.value = s.sideImageHeight || 360;
+      refs.sideImageZoom.value = s.sideImageZoom || 100;
+      refs.sideImageRadius.value = s.sideImageRadius || 18;
+      refs.sideImagePosX.value = s.sideImagePosX || 50;
+      refs.sideImagePosY.value = s.sideImagePosY || 50;
+      refs.sideImageGap.value = s.sideImageGap || 22;
       refs.bgType.value = s.bgType || 'color';
       refs.contentBoxMode.value = s.contentBoxMode || 'none';
       refs.bgColor1.value = s.bgColor1 || '#fff8fb';
@@ -1099,7 +1336,8 @@
       refs.sizePreset.value = s.sizePreset || '4:5';
       refs.watermarkInput.value = s.watermark || '';
       refs.exportScale.value = s.exportScale || '2';
-      ['baseFontSize','lineHeight','cardRadius','cardPadding','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
+      ['baseFontSize','lineHeight','cardRadius','cardPadding','sideImageWidth','sideImageHeight','sideImageZoom','sideImageRadius','sideImagePosX','sideImagePosY','sideImageGap','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
+      updateSideImagePlacementControls();
       renderSpeakerList();
       updateBgControlsVisibility();
       render();
@@ -1109,6 +1347,7 @@
     function syncRangeLabel(id) {
       const map = {
         baseFontSize: 'baseFontSizeVal', lineHeight: 'lineHeightVal', cardRadius: 'cardRadiusVal', cardPadding: 'cardPaddingVal',
+        sideImageWidth: 'sideImageWidthVal', sideImageHeight: 'sideImageHeightVal', sideImageZoom: 'sideImageZoomVal', sideImageRadius: 'sideImageRadiusVal', sideImagePosX: 'sideImagePosXVal', sideImagePosY: 'sideImagePosYVal', sideImageGap: 'sideImageGapVal',
         bgScale: 'bgScaleVal', bgOpacity: 'bgOpacityVal', bgBlur: 'bgBlurVal', bgBrightness: 'bgBrightnessVal', overlayOpacity: 'overlayOpacityVal'
       };
       const label = $(map[id]);
@@ -1126,7 +1365,7 @@
     function exportBackup() {
       const payload = {
         app: 'Dearly Excerpt',
-        version: 2,
+        version: 3,
         exportedAt: new Date().toISOString(),
         entries: getLibrary(),
       };
@@ -1175,7 +1414,16 @@
     function clearForm() {
       state.editingId = null;
       state.bgImageData = '';
+      state.sideImageData = '';
+      state.customFontData = '';
+      state.customFontName = '';
+      if (state.customFontFace) { document.fonts.delete(state.customFontFace); state.customFontFace = null; }
       refs.bgImageInput.value = '';
+      refs.sideImageInput.value = '';
+      refs.customFontInput.value = '';
+      refs.customFontOption.disabled = true;
+      refs.customFontOption.textContent = '사용자 업로드 폰트';
+      refs.customFontStatus.textContent = 'TTF · OTF · WOFF · WOFF2 지원. 업로드한 폰트는 현재 발췌 저장 데이터에 포함할 수 있음.';
       refs.excerptInput.value = '';
       refs.quoteMode.checked = true;
       refs.titleInput.value = '';
@@ -1191,6 +1439,15 @@
       refs.cardPadding.value = 34;
       refs.bodyColor.value = '#3e3038';
       refs.accentColor.value = '#e98aac';
+      refs.sideImagePlacement.value = 'left';
+      refs.sideImageFit.value = 'cover';
+      refs.sideImageWidth.value = 220;
+      refs.sideImageHeight.value = 360;
+      refs.sideImageZoom.value = 100;
+      refs.sideImageRadius.value = 18;
+      refs.sideImagePosX.value = 50;
+      refs.sideImagePosY.value = 50;
+      refs.sideImageGap.value = 22;
       refs.bgType.value = 'color';
       refs.contentBoxMode.value = 'soft';
       refs.bgColor1.value = '#fff8fb';
@@ -1206,8 +1463,9 @@
       refs.sizePreset.value = '4:5';
       refs.watermarkInput.value = '';
       refs.exportScale.value = '2';
+      updateSideImagePlacementControls();
       resetSpeakers(true);
-      ['baseFontSize','lineHeight','cardRadius','cardPadding','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
+      ['baseFontSize','lineHeight','cardRadius','cardPadding','sideImageWidth','sideImageHeight','sideImageZoom','sideImageRadius','sideImagePosX','sideImagePosY','sideImageGap','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
       updateBgControlsVisibility();
       render();
       setStatus('새 발췌 작성 상태로 초기화했어.');
