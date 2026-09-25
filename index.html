@@ -400,8 +400,11 @@
           <div><label for="locationInput">장소</label><input id="locationInput" type="text" placeholder="선택 입력"></div>
           <div><label for="pairInput">시리즈/페어명</label><input id="pairInput" type="text" placeholder="선택 입력"></div>
         </div>
-        <div style="margin-top:10px;"><label for="tagsInput">태그</label><input id="tagsInput" type="text" placeholder="#일상 #가이딩 #고백"></div>
-        <div style="margin-top:10px;"><label for="memoInput">짧은 메모</label><textarea id="memoInput" placeholder="준희가 처음으로 먼저 붙잡았던 날" style="min-height:90px;"></textarea></div>
+        <div style="margin-top:10px;"><label for="tagsInput">태그</label><input id="tagsInput" type="text" placeholder="#일상 #기록 #좋아하는장면"></div>
+        <div style="margin-top:10px;"><label for="memoInput">짧은 메모</label><textarea id="memoInput" placeholder="선택 입력" style="min-height:90px;"></textarea></div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button type="button" class="secondary small" id="creatorPresetBtn">♡ 제작자 프리셋</button>
+        </div>
       </section>
 
       <section class="section">
@@ -588,7 +591,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'serendipity_excerpt_library_v1';
+    const STORAGE_KEY = 'dearly_excerpt_library_v1';
     const DEFAULT_SPEAKERS = [];
 
     const state = {
@@ -601,7 +604,7 @@
 
     const refs = {
       excerptInput: $('excerptInput'), quoteMode: $('quoteMode'), titleInput: $('titleInput'), dateInput: $('dateInput'),
-      locationInput: $('locationInput'), pairInput: $('pairInput'), tagsInput: $('tagsInput'), memoInput: $('memoInput'),
+      locationInput: $('locationInput'), pairInput: $('pairInput'), tagsInput: $('tagsInput'), memoInput: $('memoInput'), creatorPresetBtn: $('creatorPresetBtn'),
       speakerName: $('speakerName'), speakerColor: $('speakerColor'), speakerList: $('speakerList'),
       addSpeakerBtn: $('addSpeakerBtn'), resetSpeakersBtn: $('resetSpeakersBtn'),
       presetSelect: $('presetSelect'), fontSelect: $('fontSelect'), baseFontSize: $('baseFontSize'), lineHeight: $('lineHeight'),
@@ -647,6 +650,7 @@
       refs.bgImageInput.addEventListener('change', onBgImageUpload);
       refs.addSpeakerBtn.addEventListener('click', addSpeaker);
       refs.resetSpeakersBtn.addEventListener('click', () => resetSpeakers());
+      refs.creatorPresetBtn.addEventListener('click', applyCreatorPreset);
       refs.saveBtn.addEventListener('click', saveCurrentEntry);
       refs.exportBtn.addEventListener('click', exportPng);
       refs.newBtn.addEventListener('click', clearForm);
@@ -658,6 +662,26 @@
 
     function setStatus(msg) {
       refs.statusText.textContent = msg;
+    }
+
+    function applyCreatorPreset() {
+      refs.pairInput.value = 'BLANC × ELPIS';
+      refs.watermarkInput.value = 'SERENDIPITY';
+
+      const creatorSpeakers = [
+        { name: '준희', color: '#9cc8ff' },
+        { name: '혜교', color: '#f4a8c6' },
+      ];
+
+      creatorSpeakers.forEach(item => {
+        const existing = state.speakers.find(speaker => speaker.name === item.name);
+        if (existing) existing.color = item.color;
+        else state.speakers.push({ id: crypto.randomUUID(), name: item.name, color: item.color });
+      });
+
+      renderSpeakerList();
+      render();
+      setStatus('제작자용 SERENDIPITY 프리셋을 적용했어.');
     }
 
     function resetSpeakers(silent = false) {
