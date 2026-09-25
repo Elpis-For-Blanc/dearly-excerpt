@@ -264,6 +264,8 @@
       position: relative;
       flex: 0 0 auto;
       overflow: hidden;
+      min-width: 0;
+      min-height: 0;
       background: rgba(255,255,255,0.28);
       border: 1px solid rgba(255,255,255,0.38);
       box-shadow: 0 10px 24px rgba(80, 56, 67, 0.08);
@@ -298,9 +300,23 @@
       height: 100%;
       display: block;
       max-width: none;
+      max-height: none;
       transform-origin: center center;
       user-select: none;
       pointer-events: none;
+    }
+
+    /* 프레임만 카드 크기에 맞춰 늘어나고, 사진 자체 비율은 object-fit으로 유지한다. */
+    .card-layout.image-left .side-image-frame,
+    .card-layout.image-right .side-image-frame {
+      align-self: stretch;
+      height: auto;
+      min-height: 100%;
+    }
+    .card-layout.image-top .side-image-frame,
+    .card-layout.image-bottom .side-image-frame {
+      align-self: stretch;
+      width: 100%;
     }
     .card-text-panel {
       flex: 1 1 0;
@@ -704,9 +720,10 @@
           </div>
         </div>
         <div class="grid2" style="margin-top:10px;">
-          <div><label for="sideImageWidth">이미지 넓이 <span id="sideImageWidthVal">220</span>px</label><input id="sideImageWidth" type="number" inputmode="decimal" min="80" max="560" value="220"></div>
-          <div><label for="sideImageHeight">이미지 높이 <span id="sideImageHeightVal">360</span>px</label><input id="sideImageHeight" type="number" inputmode="decimal" min="80" max="900" value="360"></div>
+          <div><label for="sideImageWidth">세로 배치 폭 <span id="sideImageWidthVal">220</span>px</label><input id="sideImageWidth" type="number" inputmode="decimal" min="80" max="560" value="220"></div>
+          <div><label for="sideImageHeight">가로 배치 높이 <span id="sideImageHeightVal">360</span>px</label><input id="sideImageHeight" type="number" inputmode="decimal" min="80" max="900" value="360"></div>
         </div>
+        <p class="desc" id="sideImageAutoSizeNote" style="margin-top:8px;">왼쪽/오른쪽은 카드 높이에 맞춰 세로로 자동 확장되고, 위/아래는 카드 넓이에 맞춰 가로로 자동 확장돼.</p>
         <div class="grid2" style="margin-top:10px;">
           <div><label for="sideImageZoom">이미지 확대 <span id="sideImageZoomVal">100</span>%</label><input id="sideImageZoom" type="number" inputmode="decimal" min="50" max="300" value="100"></div>
           <div><label for="sideImageRadius">모서리 <span id="sideImageRadiusVal">18</span>px</label><input id="sideImageRadius" type="number" inputmode="decimal" min="0" max="60" value="18"></div>
@@ -926,6 +943,7 @@
       resetSpeakers(true);
       bindEvents();
       applyPreset();
+      updateSideImagePlacementControls();
       updateBgControlsVisibility();
       render();
       renderStylePresetList();
@@ -1132,18 +1150,17 @@
       const availableHeight = Math.max(320, cardHeight - padding * 2);
 
       if (portraitPlacement) {
-        // 좌/우 이미지는 본문을 과하게 밀어내지 않도록 카드 폭의 약 1/3까지만 사용.
-        const width = Math.round(Math.min(190, availableWidth * 0.34));
-        const naturalHeightForWidth = ratio > 0 ? width / ratio : 280;
-        const height = Math.round(clampNumber(naturalHeightForWidth, 200, Math.min(330, availableHeight * 0.52)));
-        return { width, height };
+        // 세로 배치에서는 폭만 추천하고 높이는 카드의 실제 높이를 그대로 따라간다.
+        const widthByCard = availableWidth * 0.32;
+        const widthByImage = ratio > 1.35 ? availableWidth * 0.28 : availableWidth * 0.34;
+        const width = Math.round(clampNumber(Math.min(widthByCard, widthByImage), 120, Math.min(300, availableWidth * 0.42)));
+        return { width, height: Math.round(availableHeight) };
       }
 
-      // 위/아래 이미지는 가로 폭을 활용하되 카드 높이의 약 1/4 정도로 제한.
-      const width = Math.round(Math.min(500, availableWidth));
-      const naturalHeightForWidth = ratio > 0 ? width / ratio : 200;
-      const height = Math.round(clampNumber(naturalHeightForWidth, 130, Math.min(230, availableHeight * 0.30)));
-      return { width, height };
+      // 가로 배치에서는 높이만 추천하고 넓이는 카드의 실제 가로 폭을 그대로 따라간다.
+      const naturalHeightForWidth = ratio > 0 ? availableWidth / ratio : availableHeight * 0.26;
+      const height = Math.round(clampNumber(naturalHeightForWidth, 120, Math.min(300, availableHeight * 0.34)));
+      return { width: Math.round(availableWidth), height };
     }
 
     function applyRecommendedSideImageSize() {
@@ -1159,12 +1176,27 @@
       const vertical = refs.sideImagePlacement.value === 'left' || refs.sideImagePlacement.value === 'right';
       const maxWidth = vertical ? 340 : 560;
       refs.sideImageWidth.max = maxWidth;
+
+      // 방향에 따라 한 축은 카드 크기에 자동으로 맞춘다.
+      refs.sideImageWidth.disabled = !vertical;
+      refs.sideImageHeight.disabled = vertical;
+      refs.sideImageWidth.title = vertical ? '세로 이미지 프레임의 폭' : '위/아래 배치에서는 카드 폭에 자동 맞춤';
+      refs.sideImageHeight.title = vertical ? '왼쪽/오른쪽 배치에서는 카드 높이에 자동 맞춤' : '가로 이미지 프레임의 높이';
+
+      const note = $('sideImageAutoSizeNote');
+      if (note) {
+        note.textContent = vertical
+          ? '세로 배치: 폭만 직접 정하고, 높이는 발췌 카드가 길어지는 만큼 자동으로 같이 늘어나.'
+          : '가로 배치: 높이만 직접 정하고, 넓이는 발췌 카드 전체 폭에 자동으로 맞춰져.';
+      }
+
       if (state.sideImageData) {
         applyRecommendedSideImageSize();
       } else if (Number(refs.sideImageWidth.value) > maxWidth) {
         refs.sideImageWidth.value = maxWidth;
       }
       $('sideImageWidthVal').textContent = refs.sideImageWidth.value;
+      $('sideImageHeightVal').textContent = refs.sideImageHeight.value;
       render();
     }
 
@@ -1653,10 +1685,21 @@
       refs.cardLayout.classList.add(`image-${placement}`);
       refs.cardLayout.style.gap = refs.sideImageGap.value + 'px';
 
+      const vertical = placement === 'left' || placement === 'right';
       const width = Number(refs.sideImageWidth.value);
       const height = Number(refs.sideImageHeight.value);
-      refs.sideImageFrame.style.width = width + 'px';
-      refs.sideImageFrame.style.height = height + 'px';
+
+      // 프레임의 한 축은 카드 크기에 자동으로 맞춘다.
+      // 사진은 object-fit을 사용하므로 프레임이 커져도 원본 비율이 찌그러지지 않는다.
+      if (vertical) {
+        refs.sideImageFrame.style.width = width + 'px';
+        refs.sideImageFrame.style.height = '100%';
+        refs.sideImageFrame.style.flexBasis = width + 'px';
+      } else {
+        refs.sideImageFrame.style.width = '100%';
+        refs.sideImageFrame.style.height = height + 'px';
+        refs.sideImageFrame.style.flexBasis = height + 'px';
+      }
       refs.sideImageFrame.style.borderRadius = refs.sideImageRadius.value + 'px';
 
       refs.sideImagePreview.src = state.sideImageData;
@@ -1665,6 +1708,22 @@
       refs.sideImagePreview.style.objectPosition = sideImagePosition;
       refs.sideImagePreview.style.transformOrigin = sideImagePosition;
       refs.sideImagePreview.style.transform = `scale(${Number(refs.sideImageZoom.value) / 100})`;
+    }
+
+    function syncResponsiveSideImageFrame() {
+      if (!state.sideImageData) return;
+      const placement = refs.sideImagePlacement.value;
+      const vertical = placement === 'left' || placement === 'right';
+      const layoutRect = refs.cardLayout.getBoundingClientRect();
+      if (!layoutRect.width || !layoutRect.height) return;
+
+      if (vertical) {
+        refs.sideImageFrame.style.height = '100%';
+        refs.sideImageFrame.style.width = refs.sideImageWidth.value + 'px';
+      } else {
+        refs.sideImageFrame.style.width = '100%';
+        refs.sideImageFrame.style.height = refs.sideImageHeight.value + 'px';
+      }
     }
 
     function getPortraitRatio() {
@@ -1804,6 +1863,8 @@
         fallbackScale = Math.max(0.05, Math.min(1, hRatio, wRatio));
         content.style.transform = `scale(${fallbackScale})`;
       }
+
+      syncResponsiveSideImageFrame();
 
       const grewPct = Math.max(0, Math.round((cardHeight / baseHeight - 1) * 100));
       if (fallbackScale < 0.999) {
