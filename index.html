@@ -361,6 +361,71 @@
       padding-left: 2px;
     }
 
+    /* Chat mode */
+    .excerpt-content.chat-mode {
+      gap: 10px;
+      width: 100%;
+    }
+    .chat-message {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 4px;
+    }
+    .chat-message.left { align-items: flex-start; }
+    .chat-message.right { align-items: flex-end; }
+    .chat-name {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      padding: 0 8px;
+      opacity: 0.88;
+    }
+    .chat-bubble {
+      max-width: 82%;
+      padding: 10px 13px;
+      border-radius: 17px;
+      line-height: inherit;
+      white-space: pre-wrap;
+      word-break: keep-all;
+      border: 1px solid rgba(255,255,255,0.45);
+      box-shadow: 0 3px 10px rgba(70, 45, 60, 0.05);
+    }
+    .chat-message.left .chat-bubble { border-bottom-left-radius: 6px; }
+    .chat-message.right .chat-bubble { border-bottom-right-radius: 6px; }
+    .chat-narration {
+      align-self: center;
+      max-width: 88%;
+      text-align: center;
+      font-size: 0.84em;
+      opacity: 0.72;
+      padding: 5px 10px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    .mode-help {
+      margin: 7px 0 0;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .mode-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent-strong);
+      background: rgba(243,168,194,.10);
+      border: 1px solid rgba(233,135,171,.18);
+    }
+    .chat-mode .chat-bubble {
+      backdrop-filter: blur(3px);
+    }
+
     .content-box-soft {
       background: rgba(255,255,255,0.55);
       backdrop-filter: blur(10px);
@@ -483,8 +548,18 @@
 
       <section class="section">
         <h2>1. 발췌문</h2>
-        <p class="desc">화자 표기는 <strong>이름:</strong> 형식으로 입력하면 자동 구분됨. 예) <code>A: 오늘은 조금 천천히 가자.</code></p>
-        <label for="excerptInput">발췌문 입력</label>
+        <div class="grid2" style="margin-bottom:10px;">
+          <div>
+            <label for="contentMode">표시 모드</label>
+            <select id="contentMode">
+              <option value="novel">소설 모드</option>
+              <option value="chat">채팅 모드</option>
+            </select>
+          </div>
+        </div>
+        <p class="desc" id="modeHelp">소설 모드는 일반 발췌 형식. 화자는 <strong>이름:</strong> 형식으로 입력하면 자동 구분됨.</p>
+        <div class="mode-pill" id="modePill">✦ 소설 모드</div>
+        <label for="excerptInput" style="margin-top:10px;">발췌문 입력</label>
         <textarea id="excerptInput" placeholder="발췌하고 싶은 부분만 입력해줘.&#10;&#10;A: 오늘은 조금 천천히 가자.&#10;B: 그래, 서두르지 말자.&#10;창밖으로 늦은 오후의 빛이 번졌다."></textarea>
         <div class="inline"><input type="checkbox" id="quoteMode" checked><label for="quoteMode" style="margin:0;font-weight:500;">따옴표 자동 강조 감지 (“ ”, \" \" 포함)</label></div>
       </section>
@@ -509,7 +584,7 @@
 
       <section class="section">
         <h2>3. 화자 설정</h2>
-        <p class="desc">입력한 화자 이름에 맞춰 색을 자동 적용함.</p>
+        <p class="desc">화자별 색상과 채팅 모드에서의 말풍선 방향을 설정할 수 있음.</p>
         <div id="speakerList"></div>
         <div class="grid3">
           <div style="grid-column: span 2;"><label for="speakerName">화자 이름</label><input id="speakerName" type="text" placeholder="A"></div>
@@ -525,14 +600,26 @@
         <h2>4. 디자인</h2>
         <div class="grid2">
           <div>
-            <label for="presetSelect">스타일 프리셋</label>
+            <label for="presetSelect">테마</label>
             <select id="presetSelect">
-              <option value="princess">Princess</option>
-              <option value="novel">Novel</option>
-              <option value="letter">Letter</option>
-              <option value="minimal">Minimal</option>
-              <option value="dark">Dark</option>
-              <option value="diary">Diary</option>
+              <optgroup label="Pastel">
+                <option value="princess">Strawberry Pink</option>
+                <option value="sky">Powder Sky</option>
+                <option value="lavender">Lavender Milk</option>
+                <option value="mint">Mint Cream</option>
+                <option value="peach">Peach Blossom</option>
+                <option value="butter">Butter Cream</option>
+              </optgroup>
+              <optgroup label="Calm">
+                <option value="novel">Classic Ivory</option>
+                <option value="letter">Rose Letter</option>
+                <option value="bluegray">Blue Gray</option>
+                <option value="minimal">Pure White</option>
+              </optgroup>
+              <optgroup label="Mood">
+                <option value="diary">Pink Diary</option>
+                <option value="dark">Midnight</option>
+              </optgroup>
             </select>
           </div>
           <div>
@@ -764,7 +851,7 @@
     const $ = (id) => document.getElementById(id);
 
     const refs = {
-      excerptInput: $('excerptInput'), quoteMode: $('quoteMode'), titleInput: $('titleInput'), dateInput: $('dateInput'),
+      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), titleInput: $('titleInput'), dateInput: $('dateInput'),
       locationInput: $('locationInput'), pairInput: $('pairInput'), tagsInput: $('tagsInput'), memoInput: $('memoInput'), creatorPresetBtn: $('creatorPresetBtn'),
       speakerName: $('speakerName'), speakerColor: $('speakerColor'), speakerList: $('speakerList'),
       addSpeakerBtn: $('addSpeakerBtn'), resetSpeakersBtn: $('resetSpeakersBtn'),
@@ -853,14 +940,14 @@
       refs.accentColor.value = '#9cc8ff';
 
       const creatorSpeakers = [
-        { name: '준희', color: '#9cc8ff' },
-        { name: '혜교', color: '#f4a8c6' },
+        { name: '준희', color: '#9cc8ff', side: 'left' },
+        { name: '혜교', color: '#f4a8c6', side: 'right' },
       ];
 
       creatorSpeakers.forEach(item => {
         const existing = state.speakers.find(speaker => speaker.name === item.name);
-        if (existing) existing.color = item.color;
-        else state.speakers.push({ id: makeId(), name: item.name, color: item.color });
+        if (existing) { existing.color = item.color; existing.side = item.side; }
+        else state.speakers.push({ id: makeId(), name: item.name, color: item.color, side: item.side });
       });
 
       renderSpeakerList();
@@ -885,15 +972,16 @@
             <div class="speaker-name-chip"><span class="dot" style="background:${speaker.color}"></span>${escapeHtml(speaker.name)}</div>
             <button type="button" class="secondary small" data-id="${speaker.id}">삭제</button>
           </div>
-          <div class="grid2">
+          <div class="grid3">
             <div><label>이름</label><input type="text" value="${escapeAttr(speaker.name)}" data-field="name" data-id="${speaker.id}"></div>
             <div><label>색상</label><input type="color" value="${speaker.color}" data-field="color" data-id="${speaker.id}" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff;padding:4px;"></div>
+            <div><label>채팅 방향</label><select data-field="side" data-id="${speaker.id}"><option value="left" ${(speaker.side || 'left') === 'left' ? 'selected' : ''}>왼쪽</option><option value="right" ${speaker.side === 'right' ? 'selected' : ''}>오른쪽</option></select></div>
           </div>
         `;
         refs.speakerList.appendChild(card);
       });
 
-      refs.speakerList.querySelectorAll('input').forEach(input => {
+      refs.speakerList.querySelectorAll('input, select').forEach(input => {
         input.addEventListener('input', (e) => {
           const id = e.target.dataset.id;
           const field = e.target.dataset.field;
@@ -922,7 +1010,8 @@
         setStatus('화자 이름을 입력해줘.');
         return;
       }
-      state.speakers.push({ id: makeId(), name, color });
+      const side = state.speakers.filter(s => (s.side || 'left') === 'left').length <= state.speakers.filter(s => s.side === 'right').length ? 'left' : 'right';
+      state.speakers.push({ id: makeId(), name, color, side });
       refs.speakerName.value = '';
       renderSpeakerList();
       render();
@@ -1018,10 +1107,16 @@
       const preset = refs.presetSelect.value;
       const presets = {
         princess: { bg1: '#fff8fb', bg2: '#ffe7f0', body: '#3e3038', accent: '#e98aac', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
+        sky: { bg1: '#f7fbff', bg2: '#e5f3ff', body: '#314456', accent: '#86bff2', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
+        lavender: { bg1: '#fbf8ff', bg2: '#eee5ff', body: '#493e5b', accent: '#ad92e8', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
+        mint: { bg1: '#f7fffc', bg2: '#def7ec', body: '#304b44', accent: '#79c7aa', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
+        peach: { bg1: '#fff9f6', bg2: '#ffe6dc', body: '#5a403a', accent: '#ee9f84', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
+        butter: { bg1: '#fffdf5', bg2: '#fff2c9', body: '#574d35', accent: '#d9ad4d', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
         novel: { bg1: '#fffdf7', bg2: '#f7efe5', body: '#443a35', accent: '#aa8f78', box: 'none', font: "Georgia, 'Times New Roman', serif" },
         letter: { bg1: '#fffaf5', bg2: '#ffe8ef', body: '#56454c', accent: '#d887a8', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
+        bluegray: { bg1: '#f8fafc', bg2: '#e6edf3', body: '#344553', accent: '#7e9eb7', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
         minimal: { bg1: '#ffffff', bg2: '#f4f4f4', body: '#2f2f35', accent: '#8f8fc2', box: 'none', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
-        dark: { bg1: '#2e2430', bg2: '#131217', body: '#fff7fb', accent: '#ffb5d0', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
+        dark: { bg1: '#2e2430', bg2: '#131217', body: '#fff7fb', accent: '#9cc8ff', box: 'soft', font: 'Pretendard, Apple SD Gothic Neo, Noto Sans KR, sans-serif' },
         diary: { bg1: '#fffaf8', bg2: '#ffeef6', body: '#604e58', accent: '#f29bbb', box: 'solid', font: "'Comic Sans MS', 'Apple SD Gothic Neo', sans-serif" },
       };
       const p = presets[preset];
@@ -1053,6 +1148,13 @@
       return state.speakers.find(s => s.name === name)?.color || refs.accentColor.value;
     }
 
+    function getSpeakerSide(name) {
+      const speaker = state.speakers.find(s => s.name === name);
+      if (speaker?.side) return speaker.side;
+      const parsedNames = [...new Set(parseExcerpt(refs.excerptInput.value).filter(v => v.type === 'speaker').map(v => v.speaker))];
+      return parsedNames.indexOf(name) % 2 === 1 ? 'right' : 'left';
+    }
+
     function formatDateValue(v) {
       if (!v) return '';
       const [y,m,d] = v.split('-');
@@ -1080,16 +1182,55 @@
     function renderExcerptContent() {
       refs.excerptContent.innerHTML = '';
       const parsed = parseExcerpt(refs.excerptInput.value);
+      const isChat = refs.contentMode.value === 'chat';
+      refs.excerptContent.classList.toggle('chat-mode', isChat);
+
+      refs.modeHelp.innerHTML = isChat
+        ? '채팅 모드는 <strong>이름: 내용</strong>을 말풍선으로 표시함. 화자 설정에서 왼쪽/오른쪽 방향을 정할 수 있음.'
+        : '소설 모드는 일반 발췌 형식. 화자는 <strong>이름:</strong> 형식으로 입력하면 자동 구분됨.';
+      if (refs.modePill) {
+        refs.modePill.textContent = isChat ? '💬 채팅 모드' : '✦ 소설 모드';
+        refs.modePill.style.color = refs.accentColor.value;
+        refs.modePill.style.borderColor = hexToRgba(refs.accentColor.value, 0.24);
+        refs.modePill.style.background = hexToRgba(refs.accentColor.value, 0.09);
+      }
+
       if (parsed.length === 0) {
         const empty = document.createElement('div');
-        empty.className = 'excerpt-line narration';
+        empty.className = isChat ? 'chat-narration' : 'excerpt-line narration';
         empty.style.opacity = '0.65';
-        empty.textContent = '여기에 발췌문이 미리보기로 보여.';
+        empty.textContent = isChat ? '채팅 내용이 미리보기로 보여.' : '여기에 발췌문이 미리보기로 보여.';
         refs.excerptContent.appendChild(empty);
         return;
       }
 
       parsed.forEach(item => {
+        if (isChat) {
+          if (item.type === 'speaker') {
+            const side = getSpeakerSide(item.speaker);
+            const color = getSpeakerColor(item.speaker);
+            const node = document.createElement('div');
+            node.className = `chat-message ${side}`;
+            const label = document.createElement('div');
+            label.className = 'chat-name';
+            label.textContent = item.speaker;
+            label.style.color = color;
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble';
+            bubble.style.background = hexToRgba(color, side === 'right' ? 0.22 : 0.15);
+            bubble.style.borderColor = hexToRgba(color, 0.22);
+            fillRichText(bubble, item.text);
+            node.append(label, bubble);
+            refs.excerptContent.appendChild(node);
+          } else {
+            const node = document.createElement('div');
+            node.className = 'chat-narration';
+            fillRichText(node, item.text);
+            refs.excerptContent.appendChild(node);
+          }
+          return;
+        }
+
         let node;
         if (item.type === 'speaker') {
           node = document.createElement('div');
@@ -1241,6 +1382,17 @@
       refs.excerptContent.querySelectorAll('.speaker-block').forEach(block => {
         block.style.gap = Math.max(2, 6 * ratio) + 'px';
       });
+      refs.excerptContent.querySelectorAll('.chat-name').forEach(label => {
+        label.style.fontSize = Math.max(5.5, 11 * ratio) + 'px';
+      });
+      refs.excerptContent.querySelectorAll('.chat-bubble').forEach(bubble => {
+        bubble.style.padding = `${Math.max(4, 10 * ratio)}px ${Math.max(6, 13 * ratio)}px`;
+        bubble.style.borderRadius = Math.max(8, 17 * ratio) + 'px';
+      });
+      refs.excerptContent.querySelectorAll('.chat-narration').forEach(note => {
+        note.style.fontSize = Math.max(5.5, base * 0.84) + 'px';
+        note.style.padding = `${Math.max(2, 5 * ratio)}px ${Math.max(4, 10 * ratio)}px`;
+      });
     }
 
     function fitTextToCard() {
@@ -1376,6 +1528,7 @@
       return {
         id: state.editingId || makeId(),
         excerpt: refs.excerptInput.value,
+        contentMode: refs.contentMode.value,
         quoteMode: refs.quoteMode.checked,
         title: refs.titleInput.value,
         date: refs.dateInput.value,
@@ -1473,7 +1626,7 @@
               <button type="button" class="secondary small" data-action="delete" data-id="${item.id}">삭제</button>
             </div>
           </div>
-          <p>${escapeHtml(date)} · ${escapeHtml(item.pair || '발췌')}</p>
+          <p>${escapeHtml(date)} · ${escapeHtml(item.pair || (item.contentMode === 'chat' ? '채팅' : '소설'))}</p>
           <p>${escapeHtml((item.excerpt || '').slice(0, 70))}${(item.excerpt || '').length > 70 ? '…' : ''}</p>
         `;
         refs.libraryList.appendChild(card);
@@ -1492,6 +1645,7 @@
       if (!item) return;
       state.editingId = item.id;
       refs.excerptInput.value = item.excerpt || '';
+      refs.contentMode.value = item.contentMode || 'novel';
       refs.quoteMode.checked = item.quoteMode ?? true;
       refs.titleInput.value = item.title || '';
       refs.dateInput.value = item.date || '';
@@ -1499,7 +1653,7 @@
       refs.pairInput.value = item.pair || '';
       refs.tagsInput.value = item.tags || '';
       refs.memoInput.value = item.memo || '';
-      state.speakers = item.speakers?.length ? item.speakers : JSON.parse(JSON.stringify(DEFAULT_SPEAKERS));
+      state.speakers = item.speakers?.length ? item.speakers.map((speaker, index) => ({ ...speaker, side: speaker.side || (index % 2 ? 'right' : 'left') })) : JSON.parse(JSON.stringify(DEFAULT_SPEAKERS));
       state.bgImageData = item.bgImageData || '';
       state.sideImageData = item.sideImageData || '';
       await applyCustomFont(item.customFontData || '', item.customFontName || '사용자 폰트');
@@ -1568,7 +1722,7 @@
     function exportBackup() {
       const payload = {
         app: 'Dearly Excerpt',
-        version: 3,
+        version: 4,
         exportedAt: new Date().toISOString(),
         entries: getLibrary(),
       };
@@ -1628,6 +1782,7 @@
       refs.customFontOption.textContent = '사용자 업로드 폰트';
       refs.customFontStatus.textContent = 'TTF · OTF · WOFF · WOFF2 지원. 업로드한 폰트는 현재 발췌 저장 데이터에 포함할 수 있음.';
       refs.excerptInput.value = '';
+      refs.contentMode.value = 'novel';
       refs.quoteMode.checked = true;
       refs.titleInput.value = '';
       refs.dateInput.value = '';
