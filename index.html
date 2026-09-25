@@ -235,21 +235,27 @@
       position: relative;
       z-index: 2;
       padding: 34px;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
     }
 
     .card-layout {
       display: flex;
-      align-items: center;
+      align-items: stretch;
       justify-content: center;
       gap: 22px;
       width: 100%;
+      height: 100%;
       min-width: 0;
+      min-height: 0;
     }
     .card-layout.image-left { flex-direction: row; }
     .card-layout.image-right { flex-direction: row-reverse; }
     .card-layout.image-top { flex-direction: column; }
     .card-layout.image-bottom { flex-direction: column-reverse; }
-    .card-layout.no-side-image { display: block; }
+    .card-layout.no-side-image { display: block; height: 100%; }
+    .card-layout.no-side-image .card-text-panel { height: 100%; }
 
     .side-image-frame {
       position: relative;
@@ -271,9 +277,13 @@
       pointer-events: none;
     }
     .card-text-panel {
-      flex: 1 1 auto;
+      flex: 1 1 0;
       min-width: 0;
+      min-height: 0;
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     .card-top {
@@ -315,6 +325,7 @@
       flex-direction: column;
       gap: 14px;
       word-break: keep-all;
+      flex: 0 0 auto;
     }
     .excerpt-line {
       white-space: pre-wrap;
@@ -366,6 +377,16 @@
       font-weight: 700;
       letter-spacing: 0.04em;
     }
+
+    .fit-note {
+      margin-top: 8px;
+      min-height: 16px;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .fit-note.ok { color: #7d8d7a; }
+    .fit-note.tight { color: #c9869d; }
 
     .status {
       margin-top: 10px;
@@ -619,17 +640,30 @@
         <h2>7. 출력 / 저장</h2>
         <div class="grid2">
           <div>
-            <label for="sizePreset">크기 프리셋</label>
+            <label for="sizePreset">세로 카드 비율</label>
             <select id="sizePreset">
-              <option value="4:5">세로 4:5 (1080×1350)</option>
-              <option value="1:1">정사각형 (1080×1080)</option>
-              <option value="9:16">스토리형 (1080×1920)</option>
-              <option value="auto">긴 발췌 (1080 × 높이 자동)</option>
+              <option value="4:5">세로 4:5 · 기본 (1080×1350)</option>
+              <option value="3:4">세로 3:4 (1080×1440)</option>
+              <option value="2:3">세로 2:3 (1080×1620)</option>
             </select>
           </div>
           <div>
             <label for="watermarkInput">푸터 워터마크</label><input id="watermarkInput" type="text" placeholder="비워두면 표시되지 않음"></div>
         </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div>
+            <label>본문 자동 맞춤</label>
+            <div class="inline" style="margin:7px 0 0;">
+              <input type="checkbox" id="autoFitText" checked>
+              <label for="autoFitText" style="margin:0;font-weight:500;">한 장 안에 자동 축소</label>
+            </div>
+          </div>
+          <div>
+            <label for="minAutoFontSize">최소 글자 크기 <span id="minAutoFontSizeVal">9</span>px</label>
+            <input id="minAutoFontSize" type="range" min="8" max="16" value="9">
+          </div>
+        </div>
+        <div class="fit-note" id="fitNote">4:5 세로 카드 한 장에 맞춰 표시돼.</div>
         <div style="margin-top:10px;">
           <label for="exportScale">PNG 화질</label>
           <select id="exportScale">
@@ -719,7 +753,7 @@
       bgType: $('bgType'), contentBoxMode: $('contentBoxMode'), bgColor1: $('bgColor1'), bgColor2: $('bgColor2'), bgImageInput: $('bgImageInput'),
       bgFit: $('bgFit'), bgPos: $('bgPos'), bgScale: $('bgScale'), bgOpacity: $('bgOpacity'), bgBlur: $('bgBlur'), bgBrightness: $('bgBrightness'),
       overlayColor: $('overlayColor'), overlayOpacity: $('overlayOpacity'), bgImageControls: $('bgImageControls'),
-      sizePreset: $('sizePreset'), watermarkInput: $('watermarkInput'), exportScale: $('exportScale'), saveBtn: $('saveBtn'), exportBtn: $('exportBtn'), newBtn: $('newBtn'), statusText: $('statusText'),
+      sizePreset: $('sizePreset'), autoFitText: $('autoFitText'), minAutoFontSize: $('minAutoFontSize'), fitNote: $('fitNote'), watermarkInput: $('watermarkInput'), exportScale: $('exportScale'), saveBtn: $('saveBtn'), exportBtn: $('exportBtn'), newBtn: $('newBtn'), statusText: $('statusText'),
       backupExportBtn: $('backupExportBtn'), backupImportInput: $('backupImportInput'), clearLibraryBtn: $('clearLibraryBtn'), librarySearch: $('librarySearch'),
       exportTarget: $('exportTarget'), cardBg: $('cardBg'), cardOverlay: $('cardOverlay'), contentBox: $('contentBox'), cardInner: $('cardInner'),
       cardLayout: $('cardLayout'), sideImageFrame: $('sideImageFrame'), sideImagePreview: $('sideImagePreview'), cardTextPanel: $('cardTextPanel'),
@@ -759,6 +793,7 @@
       refs.sideImagePosX.addEventListener('input', () => $('sideImagePosXVal').textContent = refs.sideImagePosX.value);
       refs.sideImagePosY.addEventListener('input', () => $('sideImagePosYVal').textContent = refs.sideImagePosY.value);
       refs.sideImageGap.addEventListener('input', () => $('sideImageGapVal').textContent = refs.sideImageGap.value);
+      refs.minAutoFontSize.addEventListener('input', () => $('minAutoFontSizeVal').textContent = refs.minAutoFontSize.value);
 
       refs.presetSelect.addEventListener('change', applyPreset);
       refs.sideImagePlacement.addEventListener('change', updateSideImagePlacementControls);
@@ -777,6 +812,8 @@
       refs.backupImportInput.addEventListener('change', importBackup);
       refs.clearLibraryBtn.addEventListener('click', clearLibrary);
       refs.librarySearch.addEventListener('input', renderLibrary);
+      window.addEventListener('resize', () => requestAnimationFrame(fitTextToCard));
+      if (document.fonts?.ready) document.fonts.ready.then(() => requestAnimationFrame(fitTextToCard));
     }
 
     function setStatus(msg) {
@@ -1141,11 +1178,84 @@
       refs.exportTarget.style.minHeight = '';
       refs.exportTarget.style.width = '100%';
       refs.exportTarget.style.maxWidth = '640px';
-      if (preset === '4:5') refs.exportTarget.style.aspectRatio = '4 / 5';
-      if (preset === '1:1') refs.exportTarget.style.aspectRatio = '1 / 1';
-      if (preset === '9:16') refs.exportTarget.style.aspectRatio = '9 / 16';
-      if (preset === 'auto') refs.exportTarget.style.minHeight = '420px';
+      if (preset === '3:4') refs.exportTarget.style.aspectRatio = '3 / 4';
+      else if (preset === '2:3') refs.exportTarget.style.aspectRatio = '2 / 3';
+      else refs.exportTarget.style.aspectRatio = '4 / 5';
     }
+
+    function applyTypographyForFit(fontSize, lineHeight) {
+      const base = Number(fontSize);
+      const ratio = Math.max(0.52, Math.min(1, base / Math.max(1, Number(refs.baseFontSize.value))));
+      refs.cardInner.style.fontSize = base + 'px';
+      refs.cardInner.style.lineHeight = lineHeight;
+      refs.cardTitle.style.fontSize = Math.max(17, 28 * ratio) + 'px';
+      refs.cardMemo.style.fontSize = Math.max(9, 13 * ratio) + 'px';
+      refs.cardMemo.style.lineHeight = Math.max(1.3, 1.6 - (1 - ratio) * 0.25);
+      refs.excerptContent.style.gap = Math.max(5, 14 * ratio) + 'px';
+      refs.cardTitle.parentElement.style.marginBottom = Math.max(8, 20 * ratio) + 'px';
+      refs.footerNote.style.marginTop = Math.max(7, 20 * ratio) + 'px';
+      refs.footerNote.style.fontSize = Math.max(8, 11 * ratio) + 'px';
+      refs.eyebrow.style.gap = Math.max(3, 6 * ratio) + 'px';
+      refs.eyebrow.style.marginBottom = Math.max(4, 10 * ratio) + 'px';
+      refs.eyebrow.querySelectorAll('span').forEach(chip => {
+        chip.style.fontSize = Math.max(8, 11 * ratio) + 'px';
+        chip.style.padding = `${Math.max(3, 5 * ratio)}px ${Math.max(6, 10 * ratio)}px`;
+      });
+      refs.excerptContent.querySelectorAll('.speaker-label').forEach(label => {
+        label.style.fontSize = Math.max(8, 12 * ratio) + 'px';
+      });
+      refs.excerptContent.querySelectorAll('.speaker-block').forEach(block => {
+        block.style.gap = Math.max(3, 6 * ratio) + 'px';
+      });
+    }
+
+    function fitTextToCard() {
+      const baseFont = Number(refs.baseFontSize.value || 18);
+      const baseLine = Number(refs.lineHeight.value || 1.8);
+      applyTypographyForFit(baseFont, baseLine);
+
+      if (!refs.autoFitText.checked) {
+        refs.fitNote.textContent = '자동 맞춤 꺼짐 · 글이 넘치면 카드 밖 내용이 잘릴 수 있어.';
+        refs.fitNote.className = 'fit-note tight';
+        return;
+      }
+
+      const minFont = Number(refs.minAutoFontSize.value || 9);
+      let font = baseFont;
+      let line = baseLine;
+      let iterations = 0;
+      const panel = refs.cardTextPanel;
+
+      const overflows = () => panel.scrollHeight > panel.clientHeight + 1 || panel.scrollWidth > panel.clientWidth + 1;
+
+      while (overflows() && font > minFont && iterations < 80) {
+        font = Math.max(minFont, font - 0.5);
+        const shrink = baseFont - font;
+        line = Math.max(1.22, baseLine - shrink * 0.035);
+        applyTypographyForFit(font, line);
+        iterations++;
+      }
+
+      if (overflows() && line > 1.18) {
+        while (overflows() && line > 1.18 && iterations < 120) {
+          line = Math.max(1.18, line - 0.03);
+          applyTypographyForFit(font, line);
+          iterations++;
+        }
+      }
+
+      if (overflows()) {
+        refs.fitNote.textContent = `글이 아주 길어서 ${font.toFixed(font % 1 ? 1 : 0)}px까지 줄였어. 이미지 크기나 카드 정보를 조금 줄이면 더 여유롭게 보여.`;
+        refs.fitNote.className = 'fit-note tight';
+      } else if (font < baseFont - 0.1) {
+        refs.fitNote.textContent = `한 장에 맞게 본문을 자동으로 ${font.toFixed(font % 1 ? 1 : 0)}px로 조정했어.`;
+        refs.fitNote.className = 'fit-note ok';
+      } else {
+        refs.fitNote.textContent = '설정한 글자 크기 그대로 한 장에 들어가.';
+        refs.fitNote.className = 'fit-note ok';
+      }
+    }
+
 
     function render() {
       renderEyebrow();
@@ -1173,6 +1283,7 @@
       renderBackground();
       renderSideImage();
       applySizing();
+      requestAnimationFrame(() => requestAnimationFrame(fitTextToCard));
     }
 
     function collectFormData() {
@@ -1222,6 +1333,8 @@
           overlayColor: refs.overlayColor.value,
           overlayOpacity: refs.overlayOpacity.value,
           sizePreset: refs.sizePreset.value,
+          autoFitText: refs.autoFitText.checked,
+          minAutoFontSize: refs.minAutoFontSize.value,
           watermark: refs.watermarkInput.value,
           exportScale: refs.exportScale.value,
         },
@@ -1333,10 +1446,12 @@
       refs.bgBrightness.value = s.bgBrightness || 100;
       refs.overlayColor.value = s.overlayColor || '#ffffff';
       refs.overlayOpacity.value = s.overlayOpacity || 0;
-      refs.sizePreset.value = s.sizePreset || '4:5';
+      refs.sizePreset.value = ['4:5','3:4','2:3'].includes(s.sizePreset) ? s.sizePreset : '4:5';
+      refs.autoFitText.checked = s.autoFitText !== false;
+      refs.minAutoFontSize.value = s.minAutoFontSize || 9;
       refs.watermarkInput.value = s.watermark || '';
       refs.exportScale.value = s.exportScale || '2';
-      ['baseFontSize','lineHeight','cardRadius','cardPadding','sideImageWidth','sideImageHeight','sideImageZoom','sideImageRadius','sideImagePosX','sideImagePosY','sideImageGap','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
+      ['baseFontSize','lineHeight','cardRadius','cardPadding','sideImageWidth','sideImageHeight','sideImageZoom','sideImageRadius','sideImagePosX','sideImagePosY','sideImageGap','minAutoFontSize','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
       updateSideImagePlacementControls();
       renderSpeakerList();
       updateBgControlsVisibility();
@@ -1347,7 +1462,7 @@
     function syncRangeLabel(id) {
       const map = {
         baseFontSize: 'baseFontSizeVal', lineHeight: 'lineHeightVal', cardRadius: 'cardRadiusVal', cardPadding: 'cardPaddingVal',
-        sideImageWidth: 'sideImageWidthVal', sideImageHeight: 'sideImageHeightVal', sideImageZoom: 'sideImageZoomVal', sideImageRadius: 'sideImageRadiusVal', sideImagePosX: 'sideImagePosXVal', sideImagePosY: 'sideImagePosYVal', sideImageGap: 'sideImageGapVal',
+        sideImageWidth: 'sideImageWidthVal', sideImageHeight: 'sideImageHeightVal', sideImageZoom: 'sideImageZoomVal', sideImageRadius: 'sideImageRadiusVal', sideImagePosX: 'sideImagePosXVal', sideImagePosY: 'sideImagePosYVal', sideImageGap: 'sideImageGapVal', minAutoFontSize: 'minAutoFontSizeVal',
         bgScale: 'bgScaleVal', bgOpacity: 'bgOpacityVal', bgBlur: 'bgBlurVal', bgBrightness: 'bgBrightnessVal', overlayOpacity: 'overlayOpacityVal'
       };
       const label = $(map[id]);
@@ -1461,11 +1576,13 @@
       refs.overlayColor.value = '#ffffff';
       refs.overlayOpacity.value = 0;
       refs.sizePreset.value = '4:5';
+      refs.autoFitText.checked = true;
+      refs.minAutoFontSize.value = 9;
       refs.watermarkInput.value = '';
       refs.exportScale.value = '2';
       updateSideImagePlacementControls();
       resetSpeakers(true);
-      ['baseFontSize','lineHeight','cardRadius','cardPadding','sideImageWidth','sideImageHeight','sideImageZoom','sideImageRadius','sideImagePosX','sideImagePosY','sideImageGap','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
+      ['baseFontSize','lineHeight','cardRadius','cardPadding','sideImageWidth','sideImageHeight','sideImageZoom','sideImageRadius','sideImagePosX','sideImagePosY','sideImageGap','minAutoFontSize','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
       updateBgControlsVisibility();
       render();
       setStatus('새 발췌 작성 상태로 초기화했어.');
@@ -1475,23 +1592,30 @@
       setStatus('PNG를 생성하는 중이야...');
       try {
         if (typeof html2canvas !== 'function') throw new Error('html2canvas not loaded');
+        if (document.fonts?.ready) await document.fonts.ready;
+        fitTextToCard();
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
         const target = refs.exportTarget;
+        const quality = Number(refs.exportScale.value || 2);
+        const baseScale = 1080 / Math.max(1, target.getBoundingClientRect().width);
         const canvas = await html2canvas(target, {
           useCORS: true,
           allowTaint: true,
           backgroundColor: null,
-          scale: Number(refs.exportScale.value || 2),
+          scale: baseScale * quality,
         });
         const link = document.createElement('a');
-        link.download = `${(refs.titleInput.value || 'excerpt').replace(/[\\/:*?"<>|]/g, '_')}.png`;
+        link.download = `${(refs.titleInput.value || 'excerpt').replace(/[\/:*?"<>|]/g, '_')}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
-        setStatus('PNG 저장을 시작했어.');
+        setStatus(`PNG 저장을 시작했어. (${canvas.width}×${canvas.height})`);
       } catch (err) {
         console.error(err);
         setStatus('PNG 저장 중 오류가 났어.');
       }
     }
+
 
     function hexToRgba(hex, alpha) {
       const sanitized = hex.replace('#', '');
