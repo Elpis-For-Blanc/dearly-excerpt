@@ -553,9 +553,11 @@
     }
     .excerpt-highlight {
       color: inherit;
-      padding: .05em .16em .08em;
-      margin: 0 -.02em;
-      border-radius: .28em;
+      /* 형광펜 때문에 줄바꿈 폭이 달라지지 않도록 레이아웃 여백은 주지 않음 */
+      padding: 0;
+      margin: 0;
+      border-radius: .18em;
+      line-height: inherit;
       box-decoration-break: clone;
       -webkit-box-decoration-break: clone;
     }
@@ -2747,6 +2749,46 @@
       setStatus('새 발췌 작성 상태로 초기화됨');
     }
 
+    function prepareHighlightsForCanvas(clonedDoc) {
+      // html2canvas는 여러 줄에 걸친 inline 배경을 하나의 큰 사각형처럼
+      // 렌더링하는 경우가 있어 PNG에서 형광펜이 뭉개질 수 있음.
+      // 내보내기용 복제 DOM에서만 형광펜 배경을 토큰 단위로 나눠 렌더링함.
+      clonedDoc.querySelectorAll('mark.excerpt-highlight').forEach((mark) => {
+        const color = mark.style.backgroundColor || '#ffdce8';
+        mark.style.backgroundColor = 'transparent';
+        mark.style.padding = '0';
+        mark.style.margin = '0';
+        mark.style.borderRadius = '0';
+        mark.style.boxDecorationBreak = 'slice';
+        mark.style.webkitBoxDecorationBreak = 'slice';
+
+        const textNodes = [];
+        const walker = clonedDoc.createTreeWalker(mark, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) textNodes.push(node);
+
+        textNodes.forEach((textNode) => {
+          const value = textNode.nodeValue || '';
+          if (!value) return;
+          const frag = clonedDoc.createDocumentFragment();
+          const tokens = value.match(/\s+|[^\s]+/g) || [value];
+          tokens.forEach((token) => {
+            const piece = clonedDoc.createElement('span');
+            piece.className = 'excerpt-highlight-export-piece';
+            piece.textContent = token;
+            piece.style.backgroundColor = color;
+            piece.style.borderRadius = '.12em';
+            piece.style.padding = '0';
+            piece.style.margin = '0';
+            piece.style.lineHeight = 'inherit';
+            piece.style.color = 'inherit';
+            frag.appendChild(piece);
+          });
+          textNode.parentNode.replaceChild(frag, textNode);
+        });
+      });
+    }
+
     async function exportPng() {
       setStatus('PNG 생성 중...');
       try {
@@ -2763,6 +2805,7 @@
           allowTaint: true,
           backgroundColor: null,
           scale: baseScale * quality,
+          onclone: (clonedDoc) => prepareHighlightsForCanvas(clonedDoc),
         });
         const link = document.createElement('a');
         link.download = `${(refs.titleInput.value || 'excerpt').replace(/[\/:*?"<>|]/g, '_')}.png`;
