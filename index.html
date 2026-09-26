@@ -295,12 +295,14 @@
     .side-image-frame.dragging::after { opacity: .9; }
     .side-image-frame img {
       position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+      left: 0;
+      top: 0;
+      width: auto;
+      height: auto;
       display: block;
       max-width: none;
       max-height: none;
+      transform: none;
       transform-origin: center center;
       user-select: none;
       pointer-events: none;
@@ -1678,9 +1680,7 @@
       refs.sideImagePosY.value = Math.round(nextY);
       $('sideImagePosXVal').textContent = refs.sideImagePosX.value;
       $('sideImagePosYVal').textContent = refs.sideImagePosY.value;
-      const pos = `${refs.sideImagePosX.value}% ${refs.sideImagePosY.value}%`;
-      refs.sideImagePreview.style.objectPosition = pos;
-      refs.sideImagePreview.style.transformOrigin = pos;
+      updateSideImageGeometry();
     }
 
     function endSideImageDrag(event) {
@@ -2136,6 +2136,36 @@
       if (refs.contentBoxMode.value === 'solid') refs.contentBox.classList.add('content-box-solid');
     }
 
+    function updateSideImageGeometry() {
+      if (!state.sideImageData || refs.sideImageFrame.classList.contains('hidden')) return;
+      const frameWidth = refs.sideImageFrame.clientWidth;
+      const frameHeight = refs.sideImageFrame.clientHeight;
+      if (!frameWidth || !frameHeight) return;
+
+      const naturalWidth = state.sideImageNaturalWidth || refs.sideImagePreview.naturalWidth || 1;
+      const naturalHeight = state.sideImageNaturalHeight || refs.sideImagePreview.naturalHeight || 1;
+      if (!naturalWidth || !naturalHeight) return;
+
+      const fit = refs.sideImageFit.value;
+      const zoom = Math.max(0.1, Number(refs.sideImageZoom.value || 100) / 100);
+      const baseScale = fit === 'contain'
+        ? Math.min(frameWidth / naturalWidth, frameHeight / naturalHeight)
+        : Math.max(frameWidth / naturalWidth, frameHeight / naturalHeight);
+      const scale = Math.max(0.0001, baseScale * zoom);
+      const displayWidth = naturalWidth * scale;
+      const displayHeight = naturalHeight * scale;
+      const posX = clampNumber(Number(refs.sideImagePosX.value || 50), 0, 100) / 100;
+      const posY = clampNumber(Number(refs.sideImagePosY.value || 50), 0, 100) / 100;
+
+      refs.sideImagePreview.style.width = displayWidth + 'px';
+      refs.sideImagePreview.style.height = displayHeight + 'px';
+      refs.sideImagePreview.style.left = ((frameWidth - displayWidth) * posX) + 'px';
+      refs.sideImagePreview.style.top = ((frameHeight - displayHeight) * posY) + 'px';
+      refs.sideImagePreview.style.objectFit = 'fill';
+      refs.sideImagePreview.style.objectPosition = 'center center';
+      refs.sideImagePreview.style.transform = 'none';
+    }
+
     function renderSideImage() {
       const hasImage = Boolean(state.sideImageData);
       refs.sideImageFrame.classList.toggle('hidden', !hasImage);
@@ -2155,8 +2185,6 @@
       const width = Number(refs.sideImageWidth.value);
       const height = Number(refs.sideImageHeight.value);
 
-      // 프레임의 한 축은 카드 크기에 자동으로 맞춘다.
-      // 사진은 object-fit을 사용하므로 프레임이 커져도 원본 비율이 찌그러지지 않는다.
       if (vertical) {
         refs.sideImageFrame.style.width = width + 'px';
         refs.sideImageFrame.style.height = '100%';
@@ -2168,12 +2196,15 @@
       }
       refs.sideImageFrame.style.borderRadius = refs.sideImageRadius.value + 'px';
 
-      refs.sideImagePreview.src = state.sideImageData;
-      refs.sideImagePreview.style.objectFit = refs.sideImageFit.value;
-      const sideImagePosition = `${refs.sideImagePosX.value}% ${refs.sideImagePosY.value}%`;
-      refs.sideImagePreview.style.objectPosition = sideImagePosition;
-      refs.sideImagePreview.style.transformOrigin = sideImagePosition;
-      refs.sideImagePreview.style.transform = `scale(${Number(refs.sideImageZoom.value) / 100})`;
+      if (refs.sideImagePreview.src !== state.sideImageData) {
+        refs.sideImagePreview.onload = () => {
+          state.sideImageNaturalWidth = refs.sideImagePreview.naturalWidth || state.sideImageNaturalWidth || 0;
+          state.sideImageNaturalHeight = refs.sideImagePreview.naturalHeight || state.sideImageNaturalHeight || 0;
+          requestAnimationFrame(updateSideImageGeometry);
+        };
+        refs.sideImagePreview.src = state.sideImageData;
+      }
+      requestAnimationFrame(updateSideImageGeometry);
     }
 
     function syncResponsiveSideImageFrame() {
@@ -2190,6 +2221,7 @@
         refs.sideImageFrame.style.width = '100%';
         refs.sideImageFrame.style.height = refs.sideImageHeight.value + 'px';
       }
+      requestAnimationFrame(updateSideImageGeometry);
     }
 
     function getPortraitRatio() {
