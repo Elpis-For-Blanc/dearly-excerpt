@@ -625,7 +625,7 @@
     <aside class="sidebar">
       <div class="brand">
         <h1>Dearly Excerpt</h1>
-        <p>원하는 문장만 넣어 꾸미고 이미지로 저장하는 발췌 메이커. 입력한 데이터는 기본적으로 현재 브라우저에만 저장됨.</p>
+        <p>원하는 문장만 넣어 꾸미고 이미지로 저장하는 발췌 메이커임. 입력한 데이터는 기본적으로 현재 브라우저에만 저장됨.</p>
       </div>
 
       <div class="preview-wrap" aria-label="발췌 미리보기">
@@ -670,7 +670,7 @@
         <p class="desc" id="modeHelp">소설 모드는 일반 발췌 형식. 화자는 <strong>이름:</strong> 형식으로 입력하면 자동 구분됨.</p>
         <div class="mode-pill" id="modePill">✦ 소설 모드</div>
         <label for="excerptInput" style="margin-top:10px;">발췌문 입력</label>
-        <textarea id="excerptInput" placeholder="발췌하고 싶은 부분만 입력해줘.&#10;&#10;A: 오늘은 조금 천천히 가자.&#10;B: 그래, 서두르지 말자.&#10;창밖으로 늦은 오후의 빛이 번졌다."></textarea>
+        <textarea id="excerptInput" placeholder="발췌하고 싶은 부분만 입력하면 됨.&#10;&#10;A: 오늘은 조금 천천히 가자.&#10;B: 그래, 서두르지 말자.&#10;창밖으로 늦은 오후의 빛이 번졌다."></textarea>
         <div class="inline"><input type="checkbox" id="quoteMode" checked><label for="quoteMode" style="margin:0;font-weight:500;">따옴표 자동 강조 감지 (“ ”, \" \" 포함)</label></div>
         <div class="highlight-toolbar">
           <div class="highlight-toolbar-head">
@@ -702,7 +702,7 @@
               <button type="button" class="secondary small" id="clearHighlightsBtn">모두 해제</button>
             </div>
           </div>
-          <p class="highlight-help">발췌문에서 원하는 글자를 먼저 선택한 뒤 색을 적용해줘. 여러 줄 선택도 가능하고, 결과 카드에는 표시 코드 없이 형광펜만 보여.</p>
+          <p class="highlight-help">발췌문에서 원하는 글자를 먼저 선택한 뒤 색 적용하면 됨. 여러 줄 선택 가능함. 결과 카드에는 표시 코드 없이 형광펜만 보임.</p>
         </div>
       </section>
 
@@ -781,7 +781,7 @@
         <div style="margin-top:10px;">
           <label for="customFontInput">사용자 폰트 업로드</label>
           <input id="customFontInput" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2">
-          <p class="desc" id="customFontStatus" style="margin:6px 0 0;">TTF · OTF · WOFF · WOFF2 지원. 업로드한 폰트는 현재 발췌 저장 데이터에 포함할 수 있음.</p>
+          <p class="desc" id="customFontStatus" style="margin:6px 0 0;">TTF · OTF · WOFF · WOFF2 지원함. 업로드한 폰트는 현재 발췌 저장 데이터에 포함 가능함.</p>
         </div>
         <div class="grid2" style="margin-top:10px;">
           <div><label for="baseFontSize">본문 글자 크기 <span id="baseFontSizeVal">18</span>px</label><input id="baseFontSize" type="number" inputmode="decimal" min="14" max="28" value="18"></div>
@@ -799,7 +799,7 @@
 
       <section class="section">
         <h2>5. 발췌 이미지</h2>
-        <p class="desc">배경과 별개로 발췌 옆에 이미지를 넣을 수 있음. 큰 이미지는 카드에 맞는 크기로 자동 조절되고, 미리보기 이미지를 직접 드래그해 보이는 부분을 옮길 수 있음.</p>
+        <p class="desc">배경과 별개로 발췌 옆에 이미지 넣을 수 있음. 큰 이미지는 카드에 맞는 크기로 자동 조절됨. 미리보기 이미지를 직접 드래그해서 보이는 부분 변경 가능함.</p>
         <div style="margin-top:4px;">
           <label for="sideImageInput">이미지 첨부</label>
           <input id="sideImageInput" type="file" accept="image/*">
@@ -826,7 +826,7 @@
           <div><label for="sideImageWidth">세로 배치 폭 <span id="sideImageWidthVal">220</span>px</label><input id="sideImageWidth" type="number" inputmode="decimal" min="80" max="560" value="220"></div>
           <div><label for="sideImageHeight">가로 배치 높이 <span id="sideImageHeightVal">360</span>px</label><input id="sideImageHeight" type="number" inputmode="decimal" min="80" max="900" value="360"></div>
         </div>
-        <p class="desc" id="sideImageAutoSizeNote" style="margin-top:8px;">왼쪽/오른쪽은 카드 높이에 맞춰 세로로 자동 확장되고, 위/아래는 카드 넓이에 맞춰 가로로 자동 확장돼.</p>
+        <p class="desc" id="sideImageAutoSizeNote" style="margin-top:8px;">왼쪽/오른쪽은 카드 높이에 맞춰 세로로 자동 확장됨. 위/아래는 카드 넓이에 맞춰 가로로 자동 확장됨.</p>
         <div class="grid2" style="margin-top:10px;">
           <div><label for="sideImageZoom">이미지 확대 <span id="sideImageZoomVal">100</span>%</label><input id="sideImageZoom" type="number" inputmode="decimal" min="50" max="300" value="100"></div>
           <div><label for="sideImageRadius">모서리 <span id="sideImageRadiusVal">18</span>px</label><input id="sideImageRadius" type="number" inputmode="decimal" min="0" max="60" value="18"></div>
@@ -922,7 +922,7 @@
           <button type="button" class="secondary" id="loadStylePresetBtn">불러오기</button>
           <button type="button" class="secondary" id="deleteStylePresetBtn">삭제</button>
         </div>
-        <div class="notice" style="margin-top:10px;">배경 이미지와 사용자 업로드 폰트를 사용 중이면 프리셋 데이터에 함께 저장됨. 큰 파일은 브라우저 저장 공간을 많이 사용할 수 있음.</div>
+        <div class="notice" style="margin-top:10px;">배경 이미지와 사용자 업로드 폰트 사용 중이면 프리셋 데이터에 함께 저장됨. 큰 파일은 브라우저 저장 공간을 많이 사용할 수 있음.</div>
       </section>
 
       <section class="section">
@@ -960,7 +960,7 @@
             <option value="1.45">넉넉하게 · 기본 높이보다 최대 45% 길게</option>
           </select>
         </div>
-        <div class="fit-note" id="fitNote">카드는 필요한 만큼 조금 늘어난 뒤, 너무 길어지기 전에 본문을 자동 조절해.</div>
+        <div class="fit-note" id="fitNote">카드는 필요한 만큼 조금 늘어난 뒤, 너무 길어지기 전에 본문이 자동 조절됨.</div>
         <div style="margin-top:10px;">
           <label for="exportScale">PNG 화질</label>
           <select id="exportScale">
@@ -979,14 +979,14 @@
 
       <section class="section">
         <h2>9. 백업 / 복원</h2>
-        <p class="desc">브라우저 데이터가 지워질 수 있으니 배포판에서는 주기적으로 JSON 백업을 권장함.</p>
+        <p class="desc">브라우저 데이터가 지워질 수 있으므로 배포판에서는 주기적인 JSON 백업 권장함.</p>
         <div class="btn-row">
           <button type="button" class="secondary" id="backupExportBtn">JSON 내보내기</button>
           <label class="file-button" for="backupImportInput">JSON 가져오기</label>
           <input id="backupImportInput" type="file" accept="application/json,.json" class="hidden">
           <button type="button" class="danger" id="clearLibraryBtn">전체 기록 삭제</button>
         </div>
-        <div class="notice" style="margin-top:10px;">서버로 자동 전송하지 않으며, 저장한 발췌와 배경 이미지는 현재 브라우저의 로컬 저장소에 보관됨.</div>
+        <div class="notice" style="margin-top:10px;">서버로 자동 전송되지 않음. 저장한 발췌와 배경 이미지는 현재 브라우저의 로컬 저장소에 보관됨.</div>
       </section>
 
       <section class="section">
@@ -1225,13 +1225,13 @@
       const start = input.selectionStart ?? 0;
       const end = input.selectionEnd ?? 0;
       if (start === end) {
-        setStatus('형광펜을 적용할 글자를 먼저 선택해줘.');
+        setStatus('형광펜 적용할 글자 먼저 선택 필요함.');
         input.focus();
         return;
       }
       const additions = getSelectionHighlightRanges(start, end, refs.highlightColor.value);
       if (!additions.length) {
-        setStatus('선택한 영역에 적용할 글자가 없어.');
+        setStatus('선택한 영역에 적용할 글자 없음.');
         return;
       }
       state.highlights = (state.highlights || []).filter((old) =>
@@ -1242,7 +1242,7 @@
       input.focus();
       input.setSelectionRange(start, end);
       render();
-      setStatus(`선택한 부분에 형광펜 ${additions.length > 1 ? `${additions.length}줄을 ` : ''}적용했어.`);
+      setStatus(`선택한 부분에 형광펜 ${additions.length > 1 ? `${additions.length}줄 ` : ''}적용 완료함.`);
     }
 
     function removeHighlightFromSelection() {
@@ -1256,10 +1256,10 @@
         state.highlights = state.highlights.filter(item => !(item.start < end && item.end > start));
       }
       if (state.highlights.length === before) {
-        setStatus(start === end ? '현재 커서 위치에는 형광펜이 없어.' : '선택한 부분에는 형광펜이 없어.');
+        setStatus(start === end ? '현재 커서 위치에 형광펜 없음.' : '선택한 부분에 형광펜 없음.');
       } else {
         render();
-        setStatus('선택한 부분의 형광펜을 해제했어.');
+        setStatus('선택한 부분 형광펜 해제 완료함.');
       }
       input.focus();
       if (start !== end) input.setSelectionRange(start, end);
@@ -1267,12 +1267,12 @@
 
     function clearAllHighlights() {
       if (!state.highlights.length) {
-        setStatus('해제할 형광펜이 없어.');
+        setStatus('해제할 형광펜 없음.');
         return;
       }
       state.highlights = [];
       render();
-      setStatus('발췌문의 형광펜을 모두 해제했어.');
+      setStatus('발췌문 형광펜 전체 해제 완료함.');
     }
 
     function injectHighlightMarkup(text) {
@@ -1308,14 +1308,14 @@
 
       renderSpeakerList();
       render();
-      setStatus('제작자용 SERENDIPITY 프리셋을 적용했어.');
+      setStatus('제작자용 SERENDIPITY 프리셋 적용 완료함.');
     }
 
     function resetSpeakers(silent = false) {
       state.speakers = JSON.parse(JSON.stringify(DEFAULT_SPEAKERS));
       renderSpeakerList();
       render();
-      if (!silent) setStatus('화자 설정을 초기화했어.');
+      if (!silent) setStatus('화자 설정 초기화 완료함.');
     }
 
     function renderSpeakerList() {
@@ -1354,7 +1354,7 @@
           state.speakers = state.speakers.filter(s => s.id !== btn.dataset.id);
           renderSpeakerList();
           render();
-          setStatus('화자를 삭제했어.');
+          setStatus('화자 삭제 완료함.');
         });
       });
     }
@@ -1363,7 +1363,7 @@
       const name = refs.speakerName.value.trim();
       const color = refs.speakerColor.value;
       if (!name) {
-        setStatus('화자 이름을 입력해줘.');
+        setStatus('화자 이름 입력 필요함.');
         return;
       }
       const side = state.speakers.filter(s => (s.side || 'left') === 'left').length <= state.speakers.filter(s => s.side === 'right').length ? 'left' : 'right';
@@ -1371,7 +1371,7 @@
       refs.speakerName.value = '';
       renderSpeakerList();
       render();
-      setStatus(`화자 "${name}"를 추가했어.`);
+      setStatus(`화자 "${name}" 추가 완료함.`);
     }
 
     async function applyCustomFont(dataUrl, name = '사용자 폰트') {
@@ -1381,7 +1381,7 @@
         state.customFontName = '';
         refs.customFontOption.disabled = true;
         refs.customFontOption.textContent = '사용자 업로드 폰트';
-        refs.customFontStatus.textContent = 'TTF · OTF · WOFF · WOFF2 지원. 업로드한 폰트는 현재 발췌 저장 데이터에 포함할 수 있음.';
+        refs.customFontStatus.textContent = 'TTF · OTF · WOFF · WOFF2 지원함. 업로드한 폰트는 현재 발췌 저장 데이터에 포함 가능함.';
         return;
       }
       try {
@@ -1397,7 +1397,7 @@
         refs.customFontStatus.textContent = `${name} 적용 가능 · 저장 시 발췌 데이터에 포함됨.`;
       } catch (err) {
         console.error(err);
-        setStatus('폰트를 불러오지 못했어. TTF/OTF/WOFF/WOFF2 파일인지 확인해줘.');
+        setStatus('폰트 불러오기 실패함. TTF/OTF/WOFF/WOFF2 파일인지 확인 필요함.');
       }
     }
 
@@ -1409,7 +1409,7 @@
         await applyCustomFont(reader.result, file.name);
         refs.fontSelect.value = "'DearlyCustomFont', Pretendard, sans-serif";
         render();
-        setStatus(`사용자 폰트 "${file.name}"를 적용했어.`);
+        setStatus(`사용자 폰트 "${file.name}" 적용 완료함.`);
       };
       reader.readAsDataURL(file);
     }
@@ -1497,7 +1497,7 @@
           $('sideImagePosYVal').textContent = '50';
           applyRecommendedSideImageSize();
           render();
-          setStatus(`발췌 이미지를 카드에 맞게 자동 조절했어. 미리보기에서 이미지를 드래그해 위치를 바꿀 수 있어. (${file.name})`);
+          setStatus(`발췌 이미지 카드 크기에 맞게 자동 조절 완료함. 미리보기에서 이미지 드래그로 위치 변경 가능함. (${file.name})`);
         };
         probe.onerror = () => {
           state.sideImageData = dataUrl;
@@ -1505,7 +1505,7 @@
           state.sideImageNaturalHeight = 0;
           applyRecommendedSideImageSize();
           render();
-          setStatus(`발췌 이미지를 첨부했어. 미리보기에서 드래그해 위치를 바꿀 수 있어. (${file.name})`);
+          setStatus(`발췌 이미지 첨부 완료함. 미리보기에서 드래그로 위치 변경 가능함. (${file.name})`);
         };
         probe.src = dataUrl;
       };
@@ -1561,7 +1561,7 @@
       state.sideImageNaturalHeight = 0;
       refs.sideImageInput.value = '';
       render();
-      setStatus('발췌 이미지를 제거했어.');
+      setStatus('발췌 이미지 제거 완료함.');
     }
 
     function updateBgControlsVisibility() {
@@ -1576,7 +1576,7 @@
       reader.onload = () => {
         state.bgImageData = reader.result;
         render();
-        setStatus(`배경 이미지를 첨부했어. (${file.name})`);
+        setStatus(`배경 이미지 첨부 완료함. (${file.name})`);
       };
       reader.readAsDataURL(file);
     }
@@ -1637,13 +1637,13 @@
     function saveStylePreset() {
       const name = refs.stylePresetName.value.trim();
       if (!name) {
-        setStatus('저장할 디자인 프리셋 이름을 입력해줘.');
+        setStatus('저장할 디자인 프리셋 이름 입력 필요함.');
         refs.stylePresetName.focus();
         return;
       }
       const presets = getStylePresets();
       const existing = presets.find(v => (v.name || '').toLocaleLowerCase() === name.toLocaleLowerCase());
-      if (existing && !confirm(`"${name}" 프리셋을 현재 설정으로 덮어쓸까?`)) return;
+      if (existing && !confirm(`"${name}" 프리셋을 현재 설정으로 덮어쓰기?`)) return;
       const item = {
         id: existing?.id || makeId(),
         name,
@@ -1654,10 +1654,10 @@
       try {
         localStorage.setItem(STYLE_PRESET_KEY, JSON.stringify(next));
         renderStylePresetList(item.id);
-        setStatus(`디자인 · 배경 프리셋 "${name}"을 저장했어.`);
+        setStatus(`디자인 · 배경 프리셋 "${name}" 저장 완료함.`);
       } catch (err) {
         console.error(err);
-        setStatus('프리셋을 저장하지 못했어. 배경 이미지나 폰트 파일이 크면 브라우저 저장 공간이 부족할 수 있어.');
+        setStatus('프리셋 저장 실패함. 배경 이미지나 폰트 파일이 크면 브라우저 저장 공간이 부족할 수 있음.');
       }
     }
 
@@ -1706,34 +1706,34 @@
     async function loadSelectedStylePreset() {
       const id = refs.savedStylePresetSelect.value;
       if (!id) {
-        setStatus('불러올 디자인 프리셋을 선택해줘.');
+        setStatus('불러올 디자인 프리셋 선택 필요함.');
         return;
       }
       const item = getStylePresets().find(v => v.id === id);
       if (!item) {
         renderStylePresetList();
-        setStatus('선택한 프리셋을 찾을 수 없어.');
+        setStatus('선택한 프리셋 찾을 수 없음.');
         return;
       }
       await applyStylePresetData(item.data);
       refs.stylePresetName.value = item.name;
-      setStatus(`디자인 · 배경 프리셋 "${item.name}"을 불러왔어.`);
+      setStatus(`디자인 · 배경 프리셋 "${item.name}" 불러오기 완료함.`);
     }
 
     function deleteSelectedStylePreset() {
       const id = refs.savedStylePresetSelect.value;
       if (!id) {
-        setStatus('삭제할 디자인 프리셋을 선택해줘.');
+        setStatus('삭제할 디자인 프리셋 선택 필요함.');
         return;
       }
       const presets = getStylePresets();
       const item = presets.find(v => v.id === id);
       if (!item) return;
-      if (!confirm(`"${item.name}" 프리셋을 삭제할까?`)) return;
+      if (!confirm(`"${item.name}" 프리셋 삭제?`)) return;
       localStorage.setItem(STYLE_PRESET_KEY, JSON.stringify(presets.filter(v => v.id !== id)));
       refs.stylePresetName.value = '';
       renderStylePresetList();
-      setStatus(`디자인 · 배경 프리셋 "${item.name}"을 삭제했어.`);
+      setStatus(`디자인 · 배경 프리셋 "${item.name}" 삭제 완료함.`);
     }
 
     function applyPreset() {
@@ -1832,7 +1832,7 @@
         const empty = document.createElement('div');
         empty.className = isChat ? 'chat-narration' : 'excerpt-line narration';
         empty.style.opacity = '0.65';
-        empty.textContent = isChat ? '채팅 내용이 미리보기로 보여.' : '여기에 발췌문이 미리보기로 보여.';
+        empty.textContent = isChat ? '채팅 내용이 미리보기로 표시됨.' : '발췌문이 여기에 미리보기로 표시됨.';
         refs.excerptContent.appendChild(empty);
         return;
       }
@@ -2097,7 +2097,7 @@
       const overflows = () => content.scrollHeight > panel.clientHeight + 1 || content.scrollWidth > panel.clientWidth + 1;
 
       if (!refs.autoFitText.checked) {
-        refs.fitNote.textContent = '자동 맞춤 꺼짐 · 글이 넘치면 카드 안에서 잘릴 수 있어.';
+        refs.fitNote.textContent = '자동 맞춤 꺼짐 · 글이 넘치면 카드 안에서 잘릴 수 있음.';
         refs.fitNote.className = 'fit-note tight';
         return;
       }
@@ -2162,7 +2162,7 @@
         refs.fitNote.textContent = `글 전체 표시 우선 · 카드 +${grewPct}% · 본문 ${Math.round(fallbackScale * 100)}%로 최종 맞춤.`;
         refs.fitNote.className = 'fit-note tight';
       } else if (font < minFont - 0.01) {
-        refs.fitNote.textContent = `글 전체를 넣기 위해 카드 +${grewPct}% · 본문 ${font.toFixed(1)}px까지 자동 조절했어.`;
+        refs.fitNote.textContent = `글 전체 표시를 위해 카드 +${grewPct}% · 본문 ${font.toFixed(1)}px까지 자동 조절됨.`;
         refs.fitNote.className = 'fit-note tight';
       } else if (grew || font < baseFont - 0.01 || padding < requestedPadding || line < baseLine - 0.01) {
         refs.fitNote.textContent = `카드가 ${grewPct ? `최대 +${grewPct}% 늘어나고 ` : ''}본문 ${font.toFixed(font % 1 ? 1 : 0)}px로 전체가 들어가게 맞춰졌어.`;
@@ -2271,12 +2271,12 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
       } catch (err) {
         console.error(err);
-        setStatus('저장 공간이 부족해. 큰 배경 이미지를 줄이거나 JSON 백업 후 기록을 정리해줘.');
+        setStatus('저장 공간 부족함. 큰 배경 이미지를 줄이거나 JSON 백업 후 기록 정리 필요함.');
         return;
       }
       state.editingId = data.id;
       renderLibrary();
-      setStatus('현재 발췌를 저장했어.');
+      setStatus('현재 발췌 저장 완료함.');
     }
 
     function getLibrary() {
@@ -2290,7 +2290,7 @@
       const filtered = q ? library.filter(item => [item.title, item.excerpt, item.tags, item.pair, item.location, item.memo].some(v => (v || '').toLowerCase().includes(q))) : library;
       refs.libraryList.innerHTML = '';
       if (filtered.length === 0) {
-        refs.libraryList.innerHTML = `<div class="empty-state">${library.length ? '검색 결과가 없어.' : '아직 저장된 발췌가 없어.'}</div>`;
+        refs.libraryList.innerHTML = `<div class="empty-state">${library.length ? '검색 결과 없음.' : '아직 저장된 발췌 없음.'}</div>`;
         return;
       }
       filtered.forEach(item => {
@@ -2390,7 +2390,7 @@
       renderSpeakerList();
       updateBgControlsVisibility();
       render();
-      setStatus('저장된 발췌를 불러왔어.');
+      setStatus('저장된 발췌 불러오기 완료함.');
     }
 
     function syncRangeLabel(id) {
@@ -2408,7 +2408,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
       if (state.editingId === id) state.editingId = null;
       renderLibrary();
-      setStatus('저장된 발췌를 삭제했어.');
+      setStatus('저장된 발췌 삭제 완료함.');
     }
 
     function exportBackup() {
@@ -2427,7 +2427,7 @@
       link.download = `dearly-excerpt-backup-${stamp}.json`;
       link.click();
       URL.revokeObjectURL(url);
-      setStatus('JSON 백업 파일을 만들었어.');
+      setStatus('JSON 백업 파일 생성 완료함.');
     }
 
     function importBackup(e) {
@@ -2447,10 +2447,10 @@
           renderStylePresetList();
           renderLibrary();
           const presetCount = (!Array.isArray(parsed) && Array.isArray(parsed.stylePresets)) ? parsed.stylePresets.length : 0;
-          setStatus(`${entries.length}개의 발췌${presetCount ? `와 ${presetCount}개의 디자인 프리셋` : ''}을 복원했어.`);
+          setStatus(`${entries.length}개의 발췌${presetCount ? `와 ${presetCount}개의 디자인 프리셋` : ''} 복원 완료함.`);
         } catch (err) {
           console.error(err);
-          setStatus('가져올 수 없는 JSON 파일이야. Dearly Excerpt 백업 파일인지 확인해줘.');
+          setStatus('가져올 수 없는 JSON 파일임. Dearly Excerpt 백업 파일인지 확인 필요함.');
         } finally {
           refs.backupImportInput.value = '';
         }
@@ -2459,11 +2459,11 @@
     }
 
     function clearLibrary() {
-      if (!confirm('저장된 발췌를 모두 삭제할까? 이 작업은 되돌릴 수 없어.')) return;
+      if (!confirm('저장된 발췌 전체 삭제? 이 작업은 되돌릴 수 없음.')) return;
       localStorage.removeItem(STORAGE_KEY);
       state.editingId = null;
       renderLibrary();
-      setStatus('저장된 발췌를 모두 삭제했어.');
+      setStatus('저장된 발췌 전체 삭제 완료함.');
     }
 
     function clearForm() {
@@ -2481,7 +2481,7 @@
       refs.customFontInput.value = '';
       refs.customFontOption.disabled = true;
       refs.customFontOption.textContent = '사용자 업로드 폰트';
-      refs.customFontStatus.textContent = 'TTF · OTF · WOFF · WOFF2 지원. 업로드한 폰트는 현재 발췌 저장 데이터에 포함할 수 있음.';
+      refs.customFontStatus.textContent = 'TTF · OTF · WOFF · WOFF2 지원함. 업로드한 폰트는 현재 발췌 저장 데이터에 포함 가능함.';
       refs.excerptInput.value = '';
       refs.contentMode.value = 'novel';
       refs.quoteMode.checked = true;
@@ -2530,11 +2530,11 @@
       ['baseFontSize','lineHeight','cardRadius','cardPadding','sideImageWidth','sideImageHeight','sideImageZoom','sideImageRadius','sideImagePosX','sideImagePosY','sideImageGap','minAutoFontSize','bgScale','bgOpacity','bgBlur','bgBrightness','overlayOpacity'].forEach(syncRangeLabel);
       updateBgControlsVisibility();
       render();
-      setStatus('새 발췌 작성 상태로 초기화했어.');
+      setStatus('새 발췌 작성 상태로 초기화 완료함.');
     }
 
     async function exportPng() {
-      setStatus('PNG를 생성하는 중이야...');
+      setStatus('PNG 생성 중임...');
       try {
         if (typeof html2canvas !== 'function') throw new Error('html2canvas not loaded');
         if (document.fonts?.ready) await document.fonts.ready;
@@ -2554,10 +2554,10 @@
         link.download = `${(refs.titleInput.value || 'excerpt').replace(/[\/:*?"<>|]/g, '_')}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
-        setStatus(`PNG 저장을 시작했어. (${canvas.width}×${canvas.height})`);
+        setStatus(`PNG 저장 시작함. (${canvas.width}×${canvas.height})`);
       } catch (err) {
         console.error(err);
-        setStatus('PNG 저장 중 오류가 났어.');
+        setStatus('PNG 저장 중 오류 발생함.');
       }
     }
 
