@@ -484,6 +484,28 @@
       font-weight: 800;
       color: #5d4d57;
     }
+    .highlight-toolbar-meta {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .highlight-selection-label {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #ead2dd;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .highlight-selection-label.has-selection {
+      color: #6b5360;
+      border-color: #e7bfd0;
+      background: #fff4f8;
+    }
     .highlight-swatches {
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -675,7 +697,10 @@
         <div class="highlight-toolbar">
           <div class="highlight-toolbar-head">
             <span class="highlight-toolbar-title">형광펜</span>
-            <span id="highlightColorLabel" style="font-size:11px;color:var(--muted);">블러시 핑크</span>
+            <div class="highlight-toolbar-meta">
+              <span id="highlightSelectionLabel" class="highlight-selection-label">선택 없음</span>
+              <span id="highlightColorLabel" style="font-size:11px;color:var(--muted);">블러시 핑크</span>
+            </div>
           </div>
           <div class="highlight-swatches" id="highlightSwatches" aria-label="형광펜 기본 색상">
             <button type="button" class="highlight-swatch active" data-highlight-color="#ffdce8" data-highlight-name="블러시 핑크" title="블러시 핑크" style="background:#ffdce8"></button>
@@ -702,7 +727,7 @@
               <button type="button" class="secondary small" id="clearHighlightsBtn">모두 해제</button>
             </div>
           </div>
-          <p class="highlight-help">발췌문에서 원하는 글자를 선택한 뒤 색을 적용해 주세요. 여러 줄도 선택할 수 있음. 결과 카드에는 표시 코드 없이 형광펜만 보임.</p>
+          <p class="highlight-help">발췌문에서 원하는 글자를 선택한 뒤 색상을 누르면 바로 적용됩니다. 선택 범위가 기억되므로 모바일에서도 버튼을 눌러도 유지됩니다. 여러 줄 선택 가능함.</p>
         </div>
       </section>
 
@@ -1013,13 +1038,14 @@
       customFontName: '',
       customFontFace: null,
       highlights: [],
+      lastHighlightSelection: null,
       editingId: null,
     };
 
     const $ = (id) => document.getElementById(id);
 
     const refs = {
-      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), applyHighlightBtn: $('applyHighlightBtn'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
+      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), highlightSelectionLabel: $('highlightSelectionLabel'), applyHighlightBtn: $('applyHighlightBtn'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
       locationInput: $('locationInput'), pairInput: $('pairInput'), tagsInput: $('tagsInput'), memoInput: $('memoInput'), creatorPresetBtn: $('creatorPresetBtn'),
       speakerName: $('speakerName'), speakerColor: $('speakerColor'), speakerList: $('speakerList'),
       addSpeakerBtn: $('addSpeakerBtn'), resetSpeakersBtn: $('resetSpeakersBtn'),
@@ -1050,6 +1076,7 @@
       updateSideImagePlacementControls();
       updateBgControlsVisibility();
       render();
+      updateHighlightSelectionLabel();
       renderStylePresetList();
       renderLibrary();
       setStatus('준비 완료됨');
@@ -1063,19 +1090,42 @@
       });
       refs.excerptInput.addEventListener('input', () => {
         reconcileHighlights();
+        validateRememberedHighlightSelection();
         render();
       });
       refs.excerptInput.addEventListener('change', () => {
         reconcileHighlights();
+        validateRememberedHighlightSelection();
         render();
+      });
+      ['select', 'keyup', 'pointerup', 'touchend'].forEach(eventName => {
+        refs.excerptInput.addEventListener(eventName, () => {
+          // 모바일은 선택 핸들을 놓은 뒤 selectionStart/End가 갱신되는 데 한 틱 걸릴 수 있음.
+          requestAnimationFrame(rememberHighlightSelection);
+        });
+      });
+      document.addEventListener('selectionchange', () => {
+        if (document.activeElement === refs.excerptInput) {
+          requestAnimationFrame(rememberHighlightSelection);
+        }
       });
 
       refs.highlightSwatches.querySelectorAll('[data-highlight-color]').forEach((button) => {
+        // 데스크톱에서 버튼 클릭으로 textarea 선택 영역이 풀리지 않게 함.
+        button.addEventListener('mousedown', (event) => event.preventDefault());
         button.addEventListener('click', () => {
           setHighlightColor(button.dataset.highlightColor, button.dataset.highlightName || '기본 색상');
+          if (getRememberedOrLiveHighlightSelection()) applyHighlightToSelection();
         });
       });
       refs.highlightColor.addEventListener('input', () => setHighlightColor(refs.highlightColor.value, '직접 선택'));
+      refs.highlightColor.addEventListener('change', () => {
+        setHighlightColor(refs.highlightColor.value, '직접 선택');
+        if (getRememberedOrLiveHighlightSelection()) applyHighlightToSelection();
+      });
+      [refs.applyHighlightBtn, refs.removeHighlightBtn, refs.clearHighlightsBtn].forEach(button => {
+        button.addEventListener('mousedown', (event) => event.preventDefault());
+      });
       refs.applyHighlightBtn.addEventListener('click', applyHighlightToSelection);
       refs.removeHighlightBtn.addEventListener('click', removeHighlightFromSelection);
       refs.clearHighlightsBtn.addEventListener('click', clearAllHighlights);
@@ -1128,6 +1178,61 @@
       refs.librarySearch.addEventListener('input', renderLibrary);
       window.addEventListener('resize', () => requestAnimationFrame(fitTextToCard));
       if (document.fonts?.ready) document.fonts.ready.then(() => requestAnimationFrame(fitTextToCard));
+    }
+
+    function updateHighlightSelectionLabel() {
+      if (!refs.highlightSelectionLabel) return;
+      const selection = state.lastHighlightSelection;
+      const valid = selection && selection.end > selection.start && refs.excerptInput.value.slice(selection.start, selection.end) === selection.text;
+      refs.highlightSelectionLabel.textContent = valid ? `${selection.end - selection.start}자 선택됨` : '선택 없음';
+      refs.highlightSelectionLabel.classList.toggle('has-selection', !!valid);
+    }
+
+    function rememberHighlightSelection() {
+      const input = refs.excerptInput;
+      const start = Number(input.selectionStart ?? 0);
+      const end = Number(input.selectionEnd ?? 0);
+      if (end > start) {
+        state.lastHighlightSelection = {
+          start,
+          end,
+          text: input.value.slice(start, end),
+        };
+      } else if (document.activeElement === input) {
+        // 텍스트 영역 안에서 커서만 새로 찍은 경우 이전 선택을 버림.
+        state.lastHighlightSelection = null;
+      }
+      updateHighlightSelectionLabel();
+    }
+
+    function validateRememberedHighlightSelection() {
+      const selection = state.lastHighlightSelection;
+      if (!selection) {
+        updateHighlightSelectionLabel();
+        return;
+      }
+      const value = refs.excerptInput.value;
+      if (selection.start < 0 || selection.end > value.length || value.slice(selection.start, selection.end) !== selection.text) {
+        state.lastHighlightSelection = null;
+      }
+      updateHighlightSelectionLabel();
+    }
+
+    function getRememberedOrLiveHighlightSelection() {
+      const input = refs.excerptInput;
+      const liveStart = Number(input.selectionStart ?? 0);
+      const liveEnd = Number(input.selectionEnd ?? 0);
+      if (liveEnd > liveStart) {
+        state.lastHighlightSelection = {
+          start: liveStart,
+          end: liveEnd,
+          text: input.value.slice(liveStart, liveEnd),
+        };
+        updateHighlightSelectionLabel();
+        return state.lastHighlightSelection;
+      }
+      validateRememberedHighlightSelection();
+      return state.lastHighlightSelection;
     }
 
     function setHighlightColor(color, name = '직접 선택') {
@@ -1222,47 +1327,86 @@
 
     function applyHighlightToSelection() {
       const input = refs.excerptInput;
-      const start = input.selectionStart ?? 0;
-      const end = input.selectionEnd ?? 0;
-      if (start === end) {
+      const selection = getRememberedOrLiveHighlightSelection();
+      if (!selection || selection.start === selection.end) {
         setStatus('형광펜을 적용할 글자를 먼저 선택해 주세요.');
         input.focus();
         return;
       }
+      const { start, end } = selection;
       const additions = getSelectionHighlightRanges(start, end, refs.highlightColor.value);
       if (!additions.length) {
         setStatus('선택한 영역에 적용할 글자가 없습니다.');
         return;
       }
-      state.highlights = (state.highlights || []).filter((old) =>
-        !additions.some(add => old.start < add.end && old.end > add.start)
-      );
-      state.highlights.push(...additions);
+      // 겹치는 기존 형광펜은 선택 영역 밖 조각을 보존하고, 선택 부분만 새 색으로 교체함.
+      const preserved = [];
+      (state.highlights || []).forEach(old => {
+        if (old.end <= start || old.start >= end) {
+          preserved.push(old);
+          return;
+        }
+        if (old.start < start) {
+          preserved.push({ ...old, end: start, text: input.value.slice(old.start, start) });
+        }
+        if (old.end > end) {
+          preserved.push({ ...old, start: end, text: input.value.slice(end, old.end) });
+        }
+      });
+      state.highlights = preserved.concat(additions).filter(item => item.end > item.start && item.text);
       state.highlights.sort((a,b) => a.start - b.start);
-      input.focus();
-      input.setSelectionRange(start, end);
       render();
+      // 선택을 다시 복원해 연속으로 다른 색을 시험할 수 있게 함.
+      input.focus({ preventScroll: true });
+      try { input.setSelectionRange(start, end); } catch (_) {}
+      state.lastHighlightSelection = { start, end, text: input.value.slice(start, end) };
+      updateHighlightSelectionLabel();
       setStatus(`형광펜 ${additions.length > 1 ? `${additions.length}줄 ` : ''}적용 완료됨`);
     }
 
     function removeHighlightFromSelection() {
       const input = refs.excerptInput;
-      const start = input.selectionStart ?? 0;
-      const end = input.selectionEnd ?? 0;
-      const before = state.highlights.length;
-      if (start === end) {
-        state.highlights = state.highlights.filter(item => !(item.start <= start && item.end >= start));
-      } else {
-        state.highlights = state.highlights.filter(item => !(item.start < end && item.end > start));
-      }
-      if (state.highlights.length === before) {
+      const selection = getRememberedOrLiveHighlightSelection();
+      const caret = Number(input.selectionStart ?? 0);
+      const start = selection ? selection.start : caret;
+      const end = selection ? selection.end : caret;
+      const source = (state.highlights || []).map(item => ({ ...item }));
+      const hadOverlap = start === end
+        ? source.some(item => item.start <= start && item.end >= start)
+        : source.some(item => item.start < end && item.end > start);
+
+      if (!hadOverlap) {
         setStatus(start === end ? '현재 커서 위치에 형광펜 없음' : '선택한 부분에 형광펜 없음');
-      } else {
-        render();
-        setStatus('선택 영역 형광펜 해제됨');
+        input.focus({ preventScroll: true });
+        if (start !== end) {
+          try { input.setSelectionRange(start, end); } catch (_) {}
+        }
+        updateHighlightSelectionLabel();
+        return;
       }
-      input.focus();
-      if (start !== end) input.setSelectionRange(start, end);
+
+      const next = [];
+      source.forEach(item => {
+        if (start === end) {
+          if (!(item.start <= start && item.end >= start)) next.push(item);
+          return;
+        }
+        if (item.end <= start || item.start >= end) {
+          next.push(item);
+          return;
+        }
+        if (item.start < start) next.push({ ...item, end: start, text: input.value.slice(item.start, start) });
+        if (item.end > end) next.push({ ...item, start: end, text: input.value.slice(end, item.end) });
+      });
+      state.highlights = next.filter(item => item.end > item.start && item.text).sort((a,b) => a.start - b.start);
+      render();
+      setStatus('선택 영역 형광펜 해제됨');
+      input.focus({ preventScroll: true });
+      if (start !== end) {
+        try { input.setSelectionRange(start, end); } catch (_) {}
+        state.lastHighlightSelection = { start, end, text: input.value.slice(start, end) };
+      }
+      updateHighlightSelectionLabel();
     }
 
     function clearAllHighlights() {
@@ -2323,6 +2467,8 @@
       const item = getLibrary().find(v => v.id === id);
       if (!item) return;
       state.editingId = item.id;
+      state.lastHighlightSelection = null;
+      updateHighlightSelectionLabel();
       const legacy = extractLegacyHighlights(item.excerpt || '');
       refs.excerptInput.value = legacy.text;
       state.highlights = Array.isArray(item.highlights) ? item.highlights.map(v => ({ ...v })) : legacy.highlights;
@@ -2475,6 +2621,8 @@
       state.customFontData = '';
       state.customFontName = '';
       state.highlights = [];
+      state.lastHighlightSelection = null;
+      updateHighlightSelectionLabel();
       if (state.customFontFace) { document.fonts.delete(state.customFontFace); state.customFontFace = null; }
       refs.bgImageInput.value = '';
       refs.sideImageInput.value = '';
