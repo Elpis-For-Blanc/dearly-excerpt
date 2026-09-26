@@ -2064,19 +2064,34 @@
       if (last < text.length) target.appendChild(document.createTextNode(text.slice(last)));
     }
 
+    function getQuoteRanges(text) {
+      if (!refs.quoteMode.checked) return [];
+      const value = String(text || '');
+      const ranges = [];
+      // 큰따옴표만 대사로 감지함: “…” 또는 "…".
+      const regex = /(“[^”]+”|"[^"]+")/g;
+      let match;
+      while ((match = regex.exec(value))) {
+        ranges.push({ start: match.index, end: match.index + match[0].length });
+      }
+      return ranges;
+    }
+
     function fillRichText(target, text, globalStart = null, quoteColor = null) {
       const value = String(text || '');
       if (!value) return;
 
-      // 형광펜 정보는 textarea 밖 state에만 보관함.
-      // 따라서 입력창에는 [[hl:...]] 같은 내부 코드가 절대 삽입되지 않음.
+      // 형광펜과 대사색을 같은 좌표계에서 계산함.
+      // 형광펜이 대사 중간만 걸쳐도 원래 화자색이 풀리지 않도록 처리함.
+      const quoteRanges = getQuoteRanges(value);
+
       if (globalStart === null || globalStart === undefined) {
         appendQuoteStyledText(target, value, quoteColor);
         return;
       }
 
       const globalEnd = globalStart + value.length;
-      const ranges = (state.highlights || [])
+      const highlightRanges = (state.highlights || [])
         .filter(item => item.start < globalEnd && item.end > globalStart)
         .map(item => ({
           start: Math.max(item.start, globalStart) - globalStart,
@@ -2086,19 +2101,52 @@
         .filter(item => item.end > item.start)
         .sort((a, b) => a.start - b.start);
 
-      let cursor = 0;
-      ranges.forEach(range => {
-        if (range.start > cursor) {
-          appendQuoteStyledText(target, value.slice(cursor, range.start), quoteColor);
-        }
-        const mark = document.createElement('mark');
-        mark.className = 'excerpt-highlight';
-        mark.style.backgroundColor = range.color;
-        appendQuoteStyledText(mark, value.slice(range.start, range.end), quoteColor);
-        target.appendChild(mark);
-        cursor = Math.max(cursor, range.end);
+      const boundaries = new Set([0, value.length]);
+      highlightRanges.forEach(range => {
+        boundaries.add(range.start);
+        boundaries.add(range.end);
       });
-      if (cursor < value.length) appendQuoteStyledText(target, value.slice(cursor), quoteColor);
+      quoteRanges.forEach(range => {
+        boundaries.add(range.start);
+        boundaries.add(range.end);
+      });
+
+      const points = [...boundaries]
+        .filter(n => Number.isFinite(n) && n >= 0 && n <= value.length)
+        .sort((a, b) => a - b);
+
+      const dialogueColor = quoteColor || refs.accentColor.value;
+
+      for (let i = 0; i < points.length - 1; i++) {
+        const start = points[i];
+        const end = points[i + 1];
+        if (end <= start) continue;
+
+        const segment = value.slice(start, end);
+        const highlight = highlightRanges.find(range => range.start <= start && range.end >= end);
+        const isQuote = quoteRanges.some(range => range.start <= start && range.end >= end);
+
+        let node;
+        if (highlight) {
+          node = document.createElement('mark');
+          node.className = 'excerpt-highlight';
+          node.style.backgroundColor = highlight.color;
+        } else if (isQuote) {
+          node = document.createElement('span');
+        } else {
+          target.appendChild(document.createTextNode(segment));
+          continue;
+        }
+
+        node.textContent = segment;
+        if (isQuote) {
+          node.style.color = dialogueColor;
+          node.style.fontWeight = '700';
+        } else {
+          node.style.color = 'inherit';
+        }
+        target.appendChild(node);
+      }
     }
 
     function renderBackground() {
