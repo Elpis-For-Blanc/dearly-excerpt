@@ -722,12 +722,11 @@
               <input id="highlightColor" type="color" value="#ffdce8" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff;padding:4px;">
             </div>
             <div class="btn-row" style="margin:0;align-items:end;">
-              <button type="button" class="secondary small" id="applyHighlightBtn">선택 부분 적용</button>
               <button type="button" class="secondary small" id="removeHighlightBtn">선택 부분 해제</button>
               <button type="button" class="secondary small" id="clearHighlightsBtn">모두 해제</button>
             </div>
           </div>
-          <p class="highlight-help">발췌문에서 원하는 글자를 선택한 뒤 색상을 누르면 바로 적용됩니다. 선택 범위가 기억되므로 모바일에서도 버튼을 눌러도 유지됩니다. 여러 줄 선택 가능함.</p>
+          <p class="highlight-help">글자를 선택한 뒤 원하는 색을 누르면 바로 적용됩니다. 별도 코드나 표시 문자는 입력창에 나타나지 않습니다.</p>
         </div>
       </section>
 
@@ -1045,7 +1044,7 @@
     const $ = (id) => document.getElementById(id);
 
     const refs = {
-      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), highlightSelectionLabel: $('highlightSelectionLabel'), applyHighlightBtn: $('applyHighlightBtn'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
+      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), highlightSelectionLabel: $('highlightSelectionLabel'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
       locationInput: $('locationInput'), pairInput: $('pairInput'), tagsInput: $('tagsInput'), memoInput: $('memoInput'), creatorPresetBtn: $('creatorPresetBtn'),
       speakerName: $('speakerName'), speakerColor: $('speakerColor'), speakerList: $('speakerList'),
       addSpeakerBtn: $('addSpeakerBtn'), resetSpeakersBtn: $('resetSpeakersBtn'),
@@ -1123,10 +1122,9 @@
         setHighlightColor(refs.highlightColor.value, '직접 선택');
         if (getRememberedOrLiveHighlightSelection()) applyHighlightToSelection();
       });
-      [refs.applyHighlightBtn, refs.removeHighlightBtn, refs.clearHighlightsBtn].forEach(button => {
+      [refs.removeHighlightBtn, refs.clearHighlightsBtn].forEach(button => {
         button.addEventListener('mousedown', (event) => event.preventDefault());
       });
-      refs.applyHighlightBtn.addEventListener('click', applyHighlightToSelection);
       refs.removeHighlightBtn.addEventListener('click', removeHighlightFromSelection);
       refs.clearHighlightsBtn.addEventListener('click', clearAllHighlights);
 
@@ -1361,7 +1359,7 @@
       try { input.setSelectionRange(start, end); } catch (_) {}
       state.lastHighlightSelection = { start, end, text: input.value.slice(start, end) };
       updateHighlightSelectionLabel();
-      setStatus(`형광펜 ${additions.length > 1 ? `${additions.length}줄 ` : ''}적용 완료됨`);
+      setStatus(`형광펜 ${additions.length > 1 ? `${additions.length}줄 ` : ''}바로 적용됨`);
     }
 
     function removeHighlightFromSelection() {
@@ -1417,17 +1415,6 @@
       state.highlights = [];
       render();
       setStatus('형광펜 전체 해제됨');
-    }
-
-    function injectHighlightMarkup(text) {
-      let output = String(text || '');
-      const valid = (state.highlights || [])
-        .filter(item => item.start >= 0 && item.end <= output.length && item.end > item.start && output.slice(item.start, item.end) === item.text)
-        .sort((a,b) => b.start - a.start);
-      valid.forEach(item => {
-        output = output.slice(0, item.start) + `[[hl:${item.color}]]` + output.slice(item.start, item.end) + '[[/hl]]' + output.slice(item.end);
-      });
-      return output;
     }
 
     function setStatus(msg) {
@@ -1907,18 +1894,34 @@
     }
 
     function parseExcerpt(text) {
-      const lines = text.split(/\n+/).map(line => line.trimEnd()).filter(Boolean);
-      return lines.map(line => {
-        const speakerMatch = line.match(/^([^:：]{1,24})[:：]\s*(.+)$/);
+      const source = String(text || '');
+      const items = [];
+      const lineRegex = /[^\n]+/g;
+      let match;
+      while ((match = lineRegex.exec(source))) {
+        const rawLine = match[0];
+        const line = rawLine.trimEnd();
+        if (!line) continue;
+        const lineStart = match.index;
+        const speakerMatch = line.match(/^([^:：]{1,24})[:：](\s*)(.+)$/);
         if (speakerMatch) {
-          return { type: 'speaker', speaker: speakerMatch[1].trim(), text: speakerMatch[2] };
+          const prefixLength = speakerMatch[1].length + 1 + speakerMatch[2].length;
+          items.push({
+            type: 'speaker',
+            speaker: speakerMatch[1].trim(),
+            text: speakerMatch[3],
+            textStart: lineStart + prefixLength,
+          });
+          continue;
         }
         const monoMatch = line.match(/^[\[(](.*?)[\])]$/);
         if (monoMatch) {
-          return { type: 'monologue', text: monoMatch[1] };
+          items.push({ type: 'monologue', text: monoMatch[1], textStart: lineStart + 1 });
+          continue;
         }
-        return { type: 'narration', text: line };
-      });
+        items.push({ type: 'narration', text: line, textStart: lineStart });
+      }
+      return items;
     }
 
     function getSpeakerColor(name) {
@@ -1958,7 +1961,7 @@
 
     function renderExcerptContent() {
       refs.excerptContent.innerHTML = '';
-      const parsed = parseExcerpt(injectHighlightMarkup(refs.excerptInput.value));
+      const parsed = parseExcerpt(refs.excerptInput.value);
       const isChat = refs.contentMode.value === 'chat';
       refs.excerptContent.classList.toggle('chat-mode', isChat);
 
@@ -1996,13 +1999,13 @@
             bubble.className = 'chat-bubble';
             bubble.style.background = hexToRgba(color, side === 'right' ? 0.22 : 0.15);
             bubble.style.borderColor = hexToRgba(color, 0.22);
-            fillRichText(bubble, item.text);
+            fillRichText(bubble, item.text, item.textStart);
             node.append(label, bubble);
             refs.excerptContent.appendChild(node);
           } else {
             const node = document.createElement('div');
             node.className = 'chat-narration';
-            fillRichText(node, item.text);
+            fillRichText(node, item.text, item.textStart);
             refs.excerptContent.appendChild(node);
           }
           return;
@@ -2018,13 +2021,13 @@
           label.style.color = getSpeakerColor(item.speaker);
           const text = document.createElement('div');
           text.className = 'speaker-text';
-          fillRichText(text, item.text);
+          fillRichText(text, item.text, item.textStart);
           node.appendChild(label);
           node.appendChild(text);
         } else {
           node = document.createElement('div');
           node.className = `excerpt-line ${item.type}`;
-          fillRichText(node, item.text);
+          fillRichText(node, item.text, item.textStart);
         }
         refs.excerptContent.appendChild(node);
       });
@@ -2052,20 +2055,41 @@
       if (last < text.length) target.appendChild(document.createTextNode(text.slice(last)));
     }
 
-    function fillRichText(target, text) {
-      const highlightRegex = /\[\[hl:(#[0-9a-fA-F]{6})\]\]([\s\S]*?)\[\[\/hl\]\]/g;
-      let last = 0;
-      let match;
-      while ((match = highlightRegex.exec(text))) {
-        if (match.index > last) appendQuoteStyledText(target, text.slice(last, match.index));
+    function fillRichText(target, text, globalStart = null) {
+      const value = String(text || '');
+      if (!value) return;
+
+      // 형광펜 정보는 textarea 밖 state에만 보관함.
+      // 따라서 입력창에는 [[hl:...]] 같은 내부 코드가 절대 삽입되지 않음.
+      if (globalStart === null || globalStart === undefined) {
+        appendQuoteStyledText(target, value);
+        return;
+      }
+
+      const globalEnd = globalStart + value.length;
+      const ranges = (state.highlights || [])
+        .filter(item => item.start < globalEnd && item.end > globalStart)
+        .map(item => ({
+          start: Math.max(item.start, globalStart) - globalStart,
+          end: Math.min(item.end, globalEnd) - globalStart,
+          color: item.color || '#ffdce8',
+        }))
+        .filter(item => item.end > item.start)
+        .sort((a, b) => a.start - b.start);
+
+      let cursor = 0;
+      ranges.forEach(range => {
+        if (range.start > cursor) {
+          appendQuoteStyledText(target, value.slice(cursor, range.start));
+        }
         const mark = document.createElement('mark');
         mark.className = 'excerpt-highlight';
-        mark.style.backgroundColor = match[1];
-        appendQuoteStyledText(mark, match[2]);
+        mark.style.backgroundColor = range.color;
+        appendQuoteStyledText(mark, value.slice(range.start, range.end));
         target.appendChild(mark);
-        last = match.index + match[0].length;
-      }
-      if (last < text.length) appendQuoteStyledText(target, text.slice(last));
+        cursor = Math.max(cursor, range.end);
+      });
+      if (cursor < value.length) appendQuoteStyledText(target, value.slice(cursor));
     }
 
     function renderBackground() {
