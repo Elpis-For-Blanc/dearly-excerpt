@@ -693,7 +693,8 @@
         <div class="mode-pill" id="modePill">✦ 소설 모드</div>
         <label for="excerptInput" style="margin-top:10px;">발췌문 입력</label>
         <textarea id="excerptInput" placeholder="발췌하고 싶은 부분만 입력해 주세요.&#10;&#10;A: 오늘은 조금 천천히 가자.&#10;B: 그래, 서두르지 말자.&#10;창밖으로 늦은 오후의 빛이 번졌다."></textarea>
-        <div class="inline"><input type="checkbox" id="quoteMode" checked><label for="quoteMode" style="margin:0;font-weight:500;">따옴표 자동 강조 감지 (“ ”, \" \" 포함)</label></div>
+        <div class="inline"><input type="checkbox" id="quoteMode" checked><label for="quoteMode" style="margin:0;font-weight:500;">대사 자동 감지 (“ ”, \" \" 쌍따옴표만)</label></div>
+        <div class="inline"><input type="checkbox" id="showSpeakerNames" checked><label for="showSpeakerNames" style="margin:0;font-weight:500;">화자 이름 표시</label></div>
         <div class="highlight-toolbar">
           <div class="highlight-toolbar-head">
             <span class="highlight-toolbar-title">형광펜</span>
@@ -1045,7 +1046,7 @@
     const $ = (id) => document.getElementById(id);
 
     const refs = {
-      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), highlightSelectionLabel: $('highlightSelectionLabel'), applyHighlightBtn: $('applyHighlightBtn'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
+      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), showSpeakerNames: $('showSpeakerNames'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), highlightSelectionLabel: $('highlightSelectionLabel'), applyHighlightBtn: $('applyHighlightBtn'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
       locationInput: $('locationInput'), pairInput: $('pairInput'), tagsInput: $('tagsInput'), memoInput: $('memoInput'), creatorPresetBtn: $('creatorPresetBtn'),
       speakerName: $('speakerName'), speakerColor: $('speakerColor'), speakerList: $('speakerList'),
       addSpeakerBtn: $('addSpeakerBtn'), resetSpeakersBtn: $('resetSpeakersBtn'),
@@ -2001,8 +2002,9 @@
             bubble.className = 'chat-bubble';
             bubble.style.background = hexToRgba(color, side === 'right' ? 0.22 : 0.15);
             bubble.style.borderColor = hexToRgba(color, 0.22);
-            fillRichText(bubble, item.text, item.textStart);
-            node.append(label, bubble);
+            fillRichText(bubble, item.text, item.textStart, color);
+            if (refs.showSpeakerNames.checked) node.appendChild(label);
+            node.appendChild(bubble);
             refs.excerptContent.appendChild(node);
           } else {
             const node = document.createElement('div');
@@ -2020,11 +2022,12 @@
           const label = document.createElement('div');
           label.className = 'speaker-label';
           label.textContent = item.speaker;
-          label.style.color = getSpeakerColor(item.speaker);
+          const speakerColor = getSpeakerColor(item.speaker);
+          label.style.color = speakerColor;
           const text = document.createElement('div');
           text.className = 'speaker-text';
-          fillRichText(text, item.text, item.textStart);
-          node.appendChild(label);
+          fillRichText(text, item.text, item.textStart, speakerColor);
+          if (refs.showSpeakerNames.checked) node.appendChild(label);
           node.appendChild(text);
         } else {
           node = document.createElement('div');
@@ -2035,21 +2038,22 @@
       });
     }
 
-    function appendQuoteStyledText(target, text) {
-      const accent = refs.accentColor.value;
+    function appendQuoteStyledText(target, text, quoteColor = null) {
+      const color = quoteColor || refs.accentColor.value;
       const quoteMode = refs.quoteMode.checked;
       if (!quoteMode) {
         target.appendChild(document.createTextNode(text));
         return;
       }
-      const regex = /(“[^”]+”|"[^"]+"|'[^']+')/g;
+      // 대사는 큰따옴표만 감지함: “…” 또는 "…". 작은따옴표는 대사로 처리하지 않음.
+      const regex = /(“[^”]+”|"[^"]+")/g;
       let last = 0;
       let match;
       while ((match = regex.exec(text))) {
         if (match.index > last) target.appendChild(document.createTextNode(text.slice(last, match.index)));
         const span = document.createElement('span');
         span.textContent = match[0];
-        span.style.color = accent;
+        span.style.color = color;
         span.style.fontWeight = '700';
         target.appendChild(span);
         last = match.index + match[0].length;
@@ -2057,14 +2061,14 @@
       if (last < text.length) target.appendChild(document.createTextNode(text.slice(last)));
     }
 
-    function fillRichText(target, text, globalStart = null) {
+    function fillRichText(target, text, globalStart = null, quoteColor = null) {
       const value = String(text || '');
       if (!value) return;
 
       // 형광펜 정보는 textarea 밖 state에만 보관함.
       // 따라서 입력창에는 [[hl:...]] 같은 내부 코드가 절대 삽입되지 않음.
       if (globalStart === null || globalStart === undefined) {
-        appendQuoteStyledText(target, value);
+        appendQuoteStyledText(target, value, quoteColor);
         return;
       }
 
@@ -2082,16 +2086,16 @@
       let cursor = 0;
       ranges.forEach(range => {
         if (range.start > cursor) {
-          appendQuoteStyledText(target, value.slice(cursor, range.start));
+          appendQuoteStyledText(target, value.slice(cursor, range.start), quoteColor);
         }
         const mark = document.createElement('mark');
         mark.className = 'excerpt-highlight';
         mark.style.backgroundColor = range.color;
-        appendQuoteStyledText(mark, value.slice(range.start, range.end));
+        appendQuoteStyledText(mark, value.slice(range.start, range.end), quoteColor);
         target.appendChild(mark);
         cursor = Math.max(cursor, range.end);
       });
-      if (cursor < value.length) appendQuoteStyledText(target, value.slice(cursor));
+      if (cursor < value.length) appendQuoteStyledText(target, value.slice(cursor), quoteColor);
     }
 
     function renderBackground() {
@@ -2378,6 +2382,7 @@
         excerpt: refs.excerptInput.value,
         contentMode: refs.contentMode.value,
         quoteMode: refs.quoteMode.checked,
+        showSpeakerNames: refs.showSpeakerNames.checked,
         highlights: state.highlights,
         title: refs.titleInput.value,
         date: refs.dateInput.value,
@@ -2501,6 +2506,7 @@
       reconcileHighlights();
       refs.contentMode.value = item.contentMode || 'novel';
       refs.quoteMode.checked = item.quoteMode ?? true;
+      refs.showSpeakerNames.checked = item.showSpeakerNames ?? true;
       refs.titleInput.value = item.title || '';
       refs.dateInput.value = item.date || '';
       refs.locationInput.value = item.location || '';
@@ -2659,6 +2665,7 @@
       refs.excerptInput.value = '';
       refs.contentMode.value = 'novel';
       refs.quoteMode.checked = true;
+      refs.showSpeakerNames.checked = true;
       refs.titleInput.value = '';
       refs.dateInput.value = '';
       refs.locationInput.value = '';
