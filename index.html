@@ -465,6 +465,77 @@
       backdrop-filter: blur(3px);
     }
 
+    .highlight-toolbar {
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid #edd7e1;
+      border-radius: 14px;
+      background: #fffafa;
+    }
+    .highlight-toolbar-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 9px;
+    }
+    .highlight-toolbar-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #5d4d57;
+    }
+    .highlight-swatches {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+    .highlight-swatch {
+      position: relative;
+      height: 32px;
+      min-width: 0;
+      padding: 0;
+      border-radius: 9px;
+      border: 2px solid rgba(90,70,80,.08);
+      box-shadow: none;
+      cursor: pointer;
+    }
+    .highlight-swatch:hover { transform: translateY(-1px); }
+    .highlight-swatch.active {
+      border-color: #66515d;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.95) inset, 0 0 0 1px rgba(102,81,93,.18);
+    }
+    .highlight-swatch.active::after {
+      content: '✓';
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: rgba(67,52,61,.78);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .highlight-custom-row {
+      display: grid;
+      grid-template-columns: minmax(120px, .7fr) 1.3fr;
+      gap: 8px;
+      align-items: end;
+    }
+    .highlight-help {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .excerpt-highlight {
+      color: inherit;
+      padding: .05em .16em .08em;
+      margin: 0 -.02em;
+      border-radius: .28em;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
     .content-box-soft {
       background: rgba(255,255,255,0.55);
       backdrop-filter: blur(10px);
@@ -601,6 +672,38 @@
         <label for="excerptInput" style="margin-top:10px;">발췌문 입력</label>
         <textarea id="excerptInput" placeholder="발췌하고 싶은 부분만 입력해줘.&#10;&#10;A: 오늘은 조금 천천히 가자.&#10;B: 그래, 서두르지 말자.&#10;창밖으로 늦은 오후의 빛이 번졌다."></textarea>
         <div class="inline"><input type="checkbox" id="quoteMode" checked><label for="quoteMode" style="margin:0;font-weight:500;">따옴표 자동 강조 감지 (“ ”, \" \" 포함)</label></div>
+        <div class="highlight-toolbar">
+          <div class="highlight-toolbar-head">
+            <span class="highlight-toolbar-title">형광펜</span>
+            <span id="highlightColorLabel" style="font-size:11px;color:var(--muted);">블러시 핑크</span>
+          </div>
+          <div class="highlight-swatches" id="highlightSwatches" aria-label="형광펜 기본 색상">
+            <button type="button" class="highlight-swatch active" data-highlight-color="#ffdce8" data-highlight-name="블러시 핑크" title="블러시 핑크" style="background:#ffdce8"></button>
+            <button type="button" class="highlight-swatch" data-highlight-color="#ffc4d8" data-highlight-name="로즈 핑크" title="로즈 핑크" style="background:#ffc4d8"></button>
+            <button type="button" class="highlight-swatch" data-highlight-color="#dceeff" data-highlight-name="파우더 스카이" title="파우더 스카이" style="background:#dceeff"></button>
+            <button type="button" class="highlight-swatch" data-highlight-color="#c7dfff" data-highlight-name="베이비 블루" title="베이비 블루" style="background:#c7dfff"></button>
+            <button type="button" class="highlight-swatch" data-highlight-color="#eadfff" data-highlight-name="라벤더 밀크" title="라벤더 밀크" style="background:#eadfff"></button>
+            <button type="button" class="highlight-swatch" data-highlight-color="#dacbff" data-highlight-name="라일락" title="라일락" style="background:#dacbff"></button>
+            <button type="button" class="highlight-swatch" data-highlight-color="#dcf5e8" data-highlight-name="민트 밀크" title="민트 밀크" style="background:#dcf5e8"></button>
+            <button type="button" class="highlight-swatch" data-highlight-color="#dcebd6" data-highlight-name="세이지" title="세이지" style="background:#dcebd6"></button>
+            <button type="button" class="highlight-swatch" data-highlight-color="#ffe2d2" data-highlight-name="피치" title="피치" style="background:#ffe2d2"></button>
+            <button type="button" class="highlight-swatch" data-highlight-color="#ffd2b9" data-highlight-name="애프리콧" title="애프리콧" style="background:#ffd2b9"></button>
+            <button type="button" class="highlight-swatch" data-highlight-color="#fff1ad" data-highlight-name="버터 옐로" title="버터 옐로" style="background:#fff1ad"></button>
+            <button type="button" class="highlight-swatch" data-highlight-color="#e9e6eb" data-highlight-name="소프트 그레이" title="소프트 그레이" style="background:#e9e6eb"></button>
+          </div>
+          <div class="highlight-custom-row">
+            <div>
+              <label for="highlightColor">직접 색상</label>
+              <input id="highlightColor" type="color" value="#ffdce8" style="width:100%;height:42px;border-radius:12px;border:1px solid #ead2dd;background:#fff;padding:4px;">
+            </div>
+            <div class="btn-row" style="margin:0;align-items:end;">
+              <button type="button" class="secondary small" id="applyHighlightBtn">선택 부분 적용</button>
+              <button type="button" class="secondary small" id="removeHighlightBtn">선택 부분 해제</button>
+              <button type="button" class="secondary small" id="clearHighlightsBtn">모두 해제</button>
+            </div>
+          </div>
+          <p class="highlight-help">발췌문에서 원하는 글자를 먼저 선택한 뒤 색을 적용해줘. 여러 줄 선택도 가능하고, 결과 카드에는 표시 코드 없이 형광펜만 보여.</p>
+        </div>
       </section>
 
       <section class="section">
@@ -909,13 +1012,14 @@
       customFontData: '',
       customFontName: '',
       customFontFace: null,
+      highlights: [],
       editingId: null,
     };
 
     const $ = (id) => document.getElementById(id);
 
     const refs = {
-      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), titleInput: $('titleInput'), dateInput: $('dateInput'),
+      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), applyHighlightBtn: $('applyHighlightBtn'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
       locationInput: $('locationInput'), pairInput: $('pairInput'), tagsInput: $('tagsInput'), memoInput: $('memoInput'), creatorPresetBtn: $('creatorPresetBtn'),
       speakerName: $('speakerName'), speakerColor: $('speakerColor'), speakerList: $('speakerList'),
       addSpeakerBtn: $('addSpeakerBtn'), resetSpeakersBtn: $('resetSpeakersBtn'),
@@ -953,10 +1057,28 @@
 
     function bindEvents() {
       document.querySelectorAll('input, textarea, select').forEach((el) => {
-        if (el.type === 'file') return;
+        if (el.type === 'file' || el === refs.excerptInput) return;
         el.addEventListener('input', render);
         el.addEventListener('change', render);
       });
+      refs.excerptInput.addEventListener('input', () => {
+        reconcileHighlights();
+        render();
+      });
+      refs.excerptInput.addEventListener('change', () => {
+        reconcileHighlights();
+        render();
+      });
+
+      refs.highlightSwatches.querySelectorAll('[data-highlight-color]').forEach((button) => {
+        button.addEventListener('click', () => {
+          setHighlightColor(button.dataset.highlightColor, button.dataset.highlightName || '기본 색상');
+        });
+      });
+      refs.highlightColor.addEventListener('input', () => setHighlightColor(refs.highlightColor.value, '직접 선택'));
+      refs.applyHighlightBtn.addEventListener('click', applyHighlightToSelection);
+      refs.removeHighlightBtn.addEventListener('click', removeHighlightFromSelection);
+      refs.clearHighlightsBtn.addEventListener('click', clearAllHighlights);
 
       refs.baseFontSize.addEventListener('input', () => $('baseFontSizeVal').textContent = refs.baseFontSize.value);
       refs.lineHeight.addEventListener('input', () => $('lineHeightVal').textContent = refs.lineHeight.value);
@@ -1006,6 +1128,162 @@
       refs.librarySearch.addEventListener('input', renderLibrary);
       window.addEventListener('resize', () => requestAnimationFrame(fitTextToCard));
       if (document.fonts?.ready) document.fonts.ready.then(() => requestAnimationFrame(fitTextToCard));
+    }
+
+    function setHighlightColor(color, name = '직접 선택') {
+      refs.highlightColor.value = color;
+      if (refs.highlightColorLabel) refs.highlightColorLabel.textContent = name;
+      refs.highlightSwatches.querySelectorAll('[data-highlight-color]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.highlightColor.toLowerCase() === color.toLowerCase());
+      });
+    }
+
+    function stripHighlightMarkup(text) {
+      return String(text || '')
+        .replace(/\[\[hl:#[0-9a-fA-F]{6}\]\]/g, '')
+        .replace(/\[\[\/hl\]\]/g, '');
+    }
+
+    function extractLegacyHighlights(text) {
+      const source = String(text || '');
+      const regex = /\[\[hl:(#[0-9a-fA-F]{6})\]\]([\s\S]*?)\[\[\/hl\]\]/g;
+      let clean = '';
+      let last = 0;
+      const highlights = [];
+      let match;
+      while ((match = regex.exec(source))) {
+        clean += source.slice(last, match.index);
+        const start = clean.length;
+        clean += match[2];
+        const end = clean.length;
+        if (end > start) highlights.push({ start, end, color: match[1].toLowerCase(), text: match[2] });
+        last = match.index + match[0].length;
+      }
+      clean += source.slice(last);
+      return { text: clean, highlights };
+    }
+
+    function reconcileHighlights() {
+      const value = refs.excerptInput.value;
+      const used = [];
+      const next = [];
+      (state.highlights || []).forEach((item) => {
+        const text = item.text || '';
+        if (!text) return;
+        let start = Number(item.start) || 0;
+        let end = Number(item.end) || start + text.length;
+        if (value.slice(start, end) !== text) {
+          const nearFrom = Math.max(0, start - 80);
+          let found = value.indexOf(text, nearFrom);
+          if (found < 0) found = value.indexOf(text);
+          if (found < 0) return;
+          start = found;
+          end = found + text.length;
+        }
+        if (used.some(r => start < r.end && end > r.start)) return;
+        used.push({ start, end });
+        next.push({ start, end, color: item.color || '#ffdce8', text });
+      });
+      state.highlights = next.sort((a,b) => a.start - b.start);
+    }
+
+    function getSelectionHighlightRanges(start, end, color) {
+      const value = refs.excerptInput.value;
+      const ranges = [];
+      let cursor = start;
+      while (cursor < end) {
+        const nextBreak = value.indexOf('\n', cursor);
+        const segmentEnd = nextBreak === -1 ? end : Math.min(end, nextBreak);
+        let segmentStart = cursor;
+        const lineStart = value.lastIndexOf('\n', Math.max(0, segmentStart - 1)) + 1;
+
+        if (segmentStart === lineStart) {
+          const segmentText = value.slice(segmentStart, segmentEnd);
+          const speakerMatch = segmentText.match(/^([^:：]{1,24}[:：]\s*)/);
+          if (speakerMatch) segmentStart += speakerMatch[0].length;
+        }
+
+        while (segmentStart < segmentEnd && /\s/.test(value[segmentStart])) segmentStart++;
+        let trimmedEnd = segmentEnd;
+        while (trimmedEnd > segmentStart && /\s/.test(value[trimmedEnd - 1])) trimmedEnd--;
+
+        if (trimmedEnd > segmentStart) {
+          ranges.push({
+            start: segmentStart,
+            end: trimmedEnd,
+            color: color.toLowerCase(),
+            text: value.slice(segmentStart, trimmedEnd),
+          });
+        }
+        cursor = nextBreak === -1 || nextBreak >= end ? end : nextBreak + 1;
+      }
+      return ranges;
+    }
+
+    function applyHighlightToSelection() {
+      const input = refs.excerptInput;
+      const start = input.selectionStart ?? 0;
+      const end = input.selectionEnd ?? 0;
+      if (start === end) {
+        setStatus('형광펜을 적용할 글자를 먼저 선택해줘.');
+        input.focus();
+        return;
+      }
+      const additions = getSelectionHighlightRanges(start, end, refs.highlightColor.value);
+      if (!additions.length) {
+        setStatus('선택한 영역에 적용할 글자가 없어.');
+        return;
+      }
+      state.highlights = (state.highlights || []).filter((old) =>
+        !additions.some(add => old.start < add.end && old.end > add.start)
+      );
+      state.highlights.push(...additions);
+      state.highlights.sort((a,b) => a.start - b.start);
+      input.focus();
+      input.setSelectionRange(start, end);
+      render();
+      setStatus(`선택한 부분에 형광펜 ${additions.length > 1 ? `${additions.length}줄을 ` : ''}적용했어.`);
+    }
+
+    function removeHighlightFromSelection() {
+      const input = refs.excerptInput;
+      const start = input.selectionStart ?? 0;
+      const end = input.selectionEnd ?? 0;
+      const before = state.highlights.length;
+      if (start === end) {
+        state.highlights = state.highlights.filter(item => !(item.start <= start && item.end >= start));
+      } else {
+        state.highlights = state.highlights.filter(item => !(item.start < end && item.end > start));
+      }
+      if (state.highlights.length === before) {
+        setStatus(start === end ? '현재 커서 위치에는 형광펜이 없어.' : '선택한 부분에는 형광펜이 없어.');
+      } else {
+        render();
+        setStatus('선택한 부분의 형광펜을 해제했어.');
+      }
+      input.focus();
+      if (start !== end) input.setSelectionRange(start, end);
+    }
+
+    function clearAllHighlights() {
+      if (!state.highlights.length) {
+        setStatus('해제할 형광펜이 없어.');
+        return;
+      }
+      state.highlights = [];
+      render();
+      setStatus('발췌문의 형광펜을 모두 해제했어.');
+    }
+
+    function injectHighlightMarkup(text) {
+      let output = String(text || '');
+      const valid = (state.highlights || [])
+        .filter(item => item.start >= 0 && item.end <= output.length && item.end > item.start && output.slice(item.start, item.end) === item.text)
+        .sort((a,b) => b.start - a.start);
+      valid.forEach(item => {
+        output = output.slice(0, item.start) + `[[hl:${item.color}]]` + output.slice(item.start, item.end) + '[[/hl]]' + output.slice(item.end);
+      });
+      return output;
     }
 
     function setStatus(msg) {
@@ -1536,7 +1814,7 @@
 
     function renderExcerptContent() {
       refs.excerptContent.innerHTML = '';
-      const parsed = parseExcerpt(refs.excerptInput.value);
+      const parsed = parseExcerpt(injectHighlightMarkup(refs.excerptInput.value));
       const isChat = refs.contentMode.value === 'chat';
       refs.excerptContent.classList.toggle('chat-mode', isChat);
 
@@ -1608,29 +1886,42 @@
       });
     }
 
-    function fillRichText(target, text) {
+    function appendQuoteStyledText(target, text) {
       const accent = refs.accentColor.value;
       const quoteMode = refs.quoteMode.checked;
       if (!quoteMode) {
-        target.textContent = text;
+        target.appendChild(document.createTextNode(text));
         return;
       }
       const regex = /(“[^”]+”|"[^"]+"|'[^']+')/g;
-      const parts = text.split(regex);
-      parts.forEach(part => {
-        if (!part) return;
-        if (regex.test(part)) regex.lastIndex = 0;
-        const matched = part.match(/^(“[^”]+”|"[^"]+"|'[^']+')$/);
-        if (matched) {
-          const span = document.createElement('span');
-          span.textContent = part;
-          span.style.color = accent;
-          span.style.fontWeight = '700';
-          target.appendChild(span);
-        } else {
-          target.appendChild(document.createTextNode(part));
-        }
-      });
+      let last = 0;
+      let match;
+      while ((match = regex.exec(text))) {
+        if (match.index > last) target.appendChild(document.createTextNode(text.slice(last, match.index)));
+        const span = document.createElement('span');
+        span.textContent = match[0];
+        span.style.color = accent;
+        span.style.fontWeight = '700';
+        target.appendChild(span);
+        last = match.index + match[0].length;
+      }
+      if (last < text.length) target.appendChild(document.createTextNode(text.slice(last)));
+    }
+
+    function fillRichText(target, text) {
+      const highlightRegex = /\[\[hl:(#[0-9a-fA-F]{6})\]\]([\s\S]*?)\[\[\/hl\]\]/g;
+      let last = 0;
+      let match;
+      while ((match = highlightRegex.exec(text))) {
+        if (match.index > last) appendQuoteStyledText(target, text.slice(last, match.index));
+        const mark = document.createElement('mark');
+        mark.className = 'excerpt-highlight';
+        mark.style.backgroundColor = match[1];
+        appendQuoteStyledText(mark, match[2]);
+        target.appendChild(mark);
+        last = match.index + match[0].length;
+      }
+      if (last < text.length) appendQuoteStyledText(target, text.slice(last));
     }
 
     function renderBackground() {
@@ -1917,6 +2208,7 @@
         excerpt: refs.excerptInput.value,
         contentMode: refs.contentMode.value,
         quoteMode: refs.quoteMode.checked,
+        highlights: state.highlights,
         title: refs.titleInput.value,
         date: refs.dateInput.value,
         location: refs.locationInput.value,
@@ -2014,7 +2306,7 @@
             </div>
           </div>
           <p>${escapeHtml(date)} · ${escapeHtml(item.pair || (item.contentMode === 'chat' ? '채팅' : '소설'))}</p>
-          <p>${escapeHtml((item.excerpt || '').slice(0, 70))}${(item.excerpt || '').length > 70 ? '…' : ''}</p>
+          <p>${escapeHtml(stripHighlightMarkup(item.excerpt || '').slice(0, 70))}${stripHighlightMarkup(item.excerpt || '').length > 70 ? '…' : ''}</p>
         `;
         refs.libraryList.appendChild(card);
       });
@@ -2031,7 +2323,10 @@
       const item = getLibrary().find(v => v.id === id);
       if (!item) return;
       state.editingId = item.id;
-      refs.excerptInput.value = item.excerpt || '';
+      const legacy = extractLegacyHighlights(item.excerpt || '');
+      refs.excerptInput.value = legacy.text;
+      state.highlights = Array.isArray(item.highlights) ? item.highlights.map(v => ({ ...v })) : legacy.highlights;
+      reconcileHighlights();
       refs.contentMode.value = item.contentMode || 'novel';
       refs.quoteMode.checked = item.quoteMode ?? true;
       refs.titleInput.value = item.title || '';
@@ -2119,7 +2414,7 @@
     function exportBackup() {
       const payload = {
         app: 'Dearly Excerpt',
-        version: 5,
+        version: 6,
         exportedAt: new Date().toISOString(),
         entries: getLibrary(),
         stylePresets: getStylePresets(),
@@ -2179,6 +2474,7 @@
       state.sideImageNaturalHeight = 0;
       state.customFontData = '';
       state.customFontName = '';
+      state.highlights = [];
       if (state.customFontFace) { document.fonts.delete(state.customFontFace); state.customFontFace = null; }
       refs.bgImageInput.value = '';
       refs.sideImageInput.value = '';
