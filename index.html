@@ -553,17 +553,17 @@
     }
     .excerpt-highlight {
       color: inherit;
-      /* 형광펜은 글자 뒤쪽 하단에만 그려 위/아래 줄의 글자를 가리지 않음 */
+      /* 형광펜은 글자 높이의 약 60%를 덮는 마커 띠로 그리되 위/아래 줄은 침범하지 않음 */
       padding: 0;
       margin: 0;
       line-height: inherit;
       background-color: transparent !important;
       background-image: linear-gradient(
         to bottom,
-        transparent 52%,
-        var(--highlight-color, #ffdce8) 52%,
-        var(--highlight-color, #ffdce8) 90%,
-        transparent 90%
+        transparent 34%,
+        var(--highlight-color, #ffdce8) 34%,
+        var(--highlight-color, #ffdce8) 94%,
+        transparent 94%
       );
       background-repeat: no-repeat;
       box-decoration-break: clone;
@@ -3188,7 +3188,7 @@
     }
 
     function prepareHighlightsForCanvas(clonedDoc) {
-      // PNG 저장에서는 형광펜을 글자 단위의 낮은 배경 띠로 나눔.
+      // PNG 저장에서는 형광펜을 글자 단위의 넓은 마커 띠로 나눔.
       // 이렇게 하면 여러 줄로 감길 때 배경이 위쪽 줄의 글자를 덮는 html2canvas 오류를 피할 수 있음.
       const exportStyle = clonedDoc.createElement('style');
       exportStyle.textContent = `
@@ -3220,7 +3220,7 @@
             piece.className = 'excerpt-highlight-export-piece';
             piece.textContent = char;
             piece.style.backgroundColor = 'transparent';
-            piece.style.backgroundImage = `linear-gradient(to bottom, transparent 52%, ${color} 52%, ${color} 90%, transparent 90%)`;
+            piece.style.backgroundImage = `linear-gradient(to bottom, transparent 34%, ${color} 34%, ${color} 94%, transparent 94%)`;
             piece.style.backgroundRepeat = 'no-repeat';
             piece.style.padding = '0';
             piece.style.margin = '0';
