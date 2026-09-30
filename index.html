@@ -553,18 +553,17 @@
     }
     .excerpt-highlight {
       color: inherit;
-      /* 형광펜은 글자 높이의 약 60%를 덮는 마커 띠로 그리되 위/아래 줄은 침범하지 않음 */
+      /* 줄간격 전체가 아니라 실제 글자 높이(1em)만큼 형광펜이 꽉 차도록 표시함 */
       padding: 0;
       margin: 0;
       line-height: inherit;
       background-color: transparent !important;
       background-image: linear-gradient(
-        to bottom,
-        transparent 34%,
-        var(--highlight-color, #ffdce8) 34%,
-        var(--highlight-color, #ffdce8) 94%,
-        transparent 94%
+        var(--highlight-color, #ffdce8),
+        var(--highlight-color, #ffdce8)
       );
+      background-size: 100% 1em;
+      background-position: center;
       background-repeat: no-repeat;
       box-decoration-break: clone;
       -webkit-box-decoration-break: clone;
@@ -3220,7 +3219,9 @@
             piece.className = 'excerpt-highlight-export-piece';
             piece.textContent = char;
             piece.style.backgroundColor = 'transparent';
-            piece.style.backgroundImage = `linear-gradient(to bottom, transparent 34%, ${color} 34%, ${color} 94%, transparent 94%)`;
+            piece.style.backgroundImage = `linear-gradient(${color}, ${color})`;
+            piece.style.backgroundSize = '100% 1em';
+            piece.style.backgroundPosition = 'center';
             piece.style.backgroundRepeat = 'no-repeat';
             piece.style.padding = '0';
             piece.style.margin = '0';
