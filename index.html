@@ -574,13 +574,13 @@
     }
     .excerpt-underline {
       text-decoration-line: underline;
-      text-decoration-color: currentColor;
+      text-decoration-color: var(--underline-color, currentColor);
       text-decoration-thickness: .08em;
       text-underline-offset: .16em;
       text-decoration-skip-ink: auto;
     }
     .excerpt-bar {
-      border-left: .16em solid var(--emphasis-color, currentColor);
+      border-left: .16em solid var(--bar-color, currentColor);
       padding-left: .38em;
       margin-left: .08em;
       box-decoration-break: clone;
@@ -598,6 +598,37 @@
       gap: 7px;
       flex-wrap: wrap;
       align-items: center;
+    }
+    .emphasis-color-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .emphasis-color-block {
+      padding: 10px;
+      border: 1px solid #efdde5;
+      border-radius: 12px;
+      background: rgba(255,255,255,.72);
+    }
+    .emphasis-color-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .emphasis-color-name {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .emphasis-color-block .highlight-swatches { gap: 6px; }
+    .emphasis-color-block .highlight-swatch { width: 24px; height: 24px; }
+    @media (max-width: 560px) {
+      .emphasis-color-grid { grid-template-columns: 1fr; }
     }
 
     .content-box-soft {
@@ -784,7 +815,37 @@
             <button type="button" class="secondary small" id="removeTextStyleBtn">선택 강조 해제</button>
             <button type="button" class="secondary small" id="clearTextStylesBtn">글자 강조 모두 해제</button>
           </div>
-          <p class="highlight-help">발췌문에서 원하는 부분을 선택한 뒤 강조 방식을 눌러 주세요. 굵게·밑줄·세로선은 서로 겹쳐 적용할 수 있습니다.</p>
+          <div class="emphasis-color-grid">
+            <div class="emphasis-color-block">
+              <div class="emphasis-color-head"><span>밑줄 색상</span><span id="underlineColorLabel" class="emphasis-color-name">하늘</span></div>
+              <div class="highlight-swatches" id="underlineColorSwatches" aria-label="밑줄 색상 프리셋">
+                <button type="button" class="highlight-swatch active" data-line-color="#9cc8ff" data-line-name="하늘" title="하늘" style="background:#9cc8ff"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#f4a8c6" data-line-name="핑크" title="핑크" style="background:#f4a8c6"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#c5a7ef" data-line-name="라벤더" title="라벤더" style="background:#c5a7ef"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#8fcdb7" data-line-name="민트" title="민트" style="background:#8fcdb7"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#f0ad8b" data-line-name="피치" title="피치" style="background:#f0ad8b"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#e4c75f" data-line-name="버터" title="버터" style="background:#e4c75f"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#9c96a0" data-line-name="그레이" title="그레이" style="background:#9c96a0"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#5e5360" data-line-name="딥" title="딥" style="background:#5e5360"></button>
+              </div>
+              <div class="highlight-custom-row"><div style="flex:1;"><label for="underlineColor">직접 색상</label><input id="underlineColor" type="color" value="#9cc8ff" style="width:100%;height:38px;border-radius:10px;border:1px solid #ead2dd;background:#fff;padding:4px;"></div></div>
+            </div>
+            <div class="emphasis-color-block">
+              <div class="emphasis-color-head"><span>세로선 색상</span><span id="barColorLabel" class="emphasis-color-name">하늘</span></div>
+              <div class="highlight-swatches" id="barColorSwatches" aria-label="세로선 색상 프리셋">
+                <button type="button" class="highlight-swatch active" data-line-color="#9cc8ff" data-line-name="하늘" title="하늘" style="background:#9cc8ff"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#f4a8c6" data-line-name="핑크" title="핑크" style="background:#f4a8c6"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#c5a7ef" data-line-name="라벤더" title="라벤더" style="background:#c5a7ef"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#8fcdb7" data-line-name="민트" title="민트" style="background:#8fcdb7"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#f0ad8b" data-line-name="피치" title="피치" style="background:#f0ad8b"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#e4c75f" data-line-name="버터" title="버터" style="background:#e4c75f"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#9c96a0" data-line-name="그레이" title="그레이" style="background:#9c96a0"></button>
+                <button type="button" class="highlight-swatch" data-line-color="#5e5360" data-line-name="딥" title="딥" style="background:#5e5360"></button>
+              </div>
+              <div class="highlight-custom-row"><div style="flex:1;"><label for="barColor">직접 색상</label><input id="barColor" type="color" value="#9cc8ff" style="width:100%;height:38px;border-radius:10px;border:1px solid #ead2dd;background:#fff;padding:4px;"></div></div>
+            </div>
+          </div>
+          <p class="highlight-help">발췌문에서 원하는 부분을 선택한 뒤 강조 방식을 눌러 주세요. 밑줄·세로선은 각각 프리셋 또는 직접 선택한 색상으로 적용되며 서로 겹쳐 사용할 수 있습니다.</p>
         </div>
       </section>
 
@@ -1103,7 +1164,7 @@
     const $ = (id) => document.getElementById(id);
 
     const refs = {
-      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), showSpeakerNames: $('showSpeakerNames'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), highlightSelectionLabel: $('highlightSelectionLabel'), applyHighlightBtn: $('applyHighlightBtn'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), boldSelectionBtn: $('boldSelectionBtn'), underlineSelectionBtn: $('underlineSelectionBtn'), barSelectionBtn: $('barSelectionBtn'), removeTextStyleBtn: $('removeTextStyleBtn'), clearTextStylesBtn: $('clearTextStylesBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
+      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), showSpeakerNames: $('showSpeakerNames'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), highlightSelectionLabel: $('highlightSelectionLabel'), applyHighlightBtn: $('applyHighlightBtn'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), boldSelectionBtn: $('boldSelectionBtn'), underlineSelectionBtn: $('underlineSelectionBtn'), barSelectionBtn: $('barSelectionBtn'), underlineColorSwatches: $('underlineColorSwatches'), underlineColor: $('underlineColor'), underlineColorLabel: $('underlineColorLabel'), barColorSwatches: $('barColorSwatches'), barColor: $('barColor'), barColorLabel: $('barColorLabel'), removeTextStyleBtn: $('removeTextStyleBtn'), clearTextStylesBtn: $('clearTextStylesBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
       locationInput: $('locationInput'), pairInput: $('pairInput'), tagsInput: $('tagsInput'), memoInput: $('memoInput'), creatorPresetBtn: $('creatorPresetBtn'),
       speakerName: $('speakerName'), speakerColor: $('speakerColor'), speakerList: $('speakerList'),
       addSpeakerBtn: $('addSpeakerBtn'), resetSpeakersBtn: $('resetSpeakersBtn'),
@@ -1189,6 +1250,9 @@
       refs.applyHighlightBtn.addEventListener('click', applyHighlightToSelection);
       refs.removeHighlightBtn.addEventListener('click', removeHighlightFromSelection);
       refs.clearHighlightsBtn.addEventListener('click', clearAllHighlights);
+
+      bindLineColorPalette('underline');
+      bindLineColorPalette('bar');
 
       [refs.boldSelectionBtn, refs.underlineSelectionBtn, refs.barSelectionBtn, refs.removeTextStyleBtn, refs.clearTextStylesBtn].forEach(button => {
         button.addEventListener('mousedown', (event) => event.preventDefault());
@@ -1309,6 +1373,44 @@
       if (refs.highlightColorLabel) refs.highlightColorLabel.textContent = name;
       refs.highlightSwatches.querySelectorAll('[data-highlight-color]').forEach((button) => {
         button.classList.toggle('active', button.dataset.highlightColor.toLowerCase() === color.toLowerCase());
+      });
+    }
+
+    function setLineColor(kind, color, name = '직접 선택') {
+      const input = kind === 'underline' ? refs.underlineColor : refs.barColor;
+      const label = kind === 'underline' ? refs.underlineColorLabel : refs.barColorLabel;
+      const swatches = kind === 'underline' ? refs.underlineColorSwatches : refs.barColorSwatches;
+      if (!input || !swatches) return;
+      input.value = color;
+      if (label) label.textContent = name;
+      swatches.querySelectorAll('[data-line-color]').forEach(button => {
+        button.classList.toggle('active', button.dataset.lineColor.toLowerCase() === color.toLowerCase());
+      });
+    }
+
+    function bindLineColorPalette(kind) {
+      const input = kind === 'underline' ? refs.underlineColor : refs.barColor;
+      const swatches = kind === 'underline' ? refs.underlineColorSwatches : refs.barColorSwatches;
+      if (!input || !swatches) return;
+      swatches.querySelectorAll('[data-line-color]').forEach(button => {
+        button.addEventListener('mousedown', event => event.preventDefault());
+        button.addEventListener('click', () => {
+          setLineColor(kind, button.dataset.lineColor, button.dataset.lineName || '기본 색상');
+          refs.excerptInput.focus({ preventScroll: true });
+          const selection = state.lastHighlightSelection;
+          if (selection) {
+            try { refs.excerptInput.setSelectionRange(selection.start, selection.end); } catch (_) {}
+          }
+        });
+      });
+      input.addEventListener('input', () => setLineColor(kind, input.value, '직접 선택'));
+      input.addEventListener('change', () => {
+        setLineColor(kind, input.value, '직접 선택');
+        refs.excerptInput.focus({ preventScroll: true });
+        const selection = state.lastHighlightSelection;
+        if (selection) {
+          try { refs.excerptInput.setSelectionRange(selection.start, selection.end); } catch (_) {}
+        }
       });
     }
 
@@ -1519,12 +1621,18 @@
       const value = refs.excerptInput.value;
       const sorted = (ranges || [])
         .filter(item => item && item.end > item.start)
-        .map(item => ({ start: Number(item.start), end: Number(item.end), text: value.slice(Number(item.start), Number(item.end)) }))
+        .map(item => ({
+          start: Number(item.start),
+          end: Number(item.end),
+          text: value.slice(Number(item.start), Number(item.end)),
+          ...(item.color ? { color: item.color } : {}),
+        }))
         .sort((a, b) => a.start - b.start || a.end - b.end);
       const merged = [];
       sorted.forEach(item => {
         const last = merged[merged.length - 1];
-        if (last && item.start <= last.end) {
+        const sameColor = (last?.color || '') === (item.color || '');
+        if (last && sameColor && item.start <= last.end) {
           last.end = Math.max(last.end, item.end);
           last.text = value.slice(last.start, last.end);
         } else {
@@ -1553,7 +1661,7 @@
         }
         if (used.some(r => start < r.end && end > r.start)) return;
         used.push({ start, end });
-        next.push({ start, end, text: value.slice(start, end) });
+        next.push({ start, end, text: value.slice(start, end), ...(item.color ? { color: item.color } : {}) });
       });
       return normalizeStyleRanges(next);
     }
@@ -1582,7 +1690,14 @@
         return;
       }
       if (!state.textStyles) state.textStyles = { bold: [], underline: [], bar: [] };
-      state.textStyles[styleKey] = normalizeStyleRanges([...(state.textStyles[styleKey] || []), ...additions]);
+      if (styleKey === 'underline' || styleKey === 'bar') {
+        const color = styleKey === 'underline' ? refs.underlineColor.value : refs.barColor.value;
+        const coloredAdditions = additions.map(item => ({ ...item, color }));
+        const preserved = subtractSelectionFromStyleRanges(state.textStyles[styleKey] || [], selection.start, selection.end);
+        state.textStyles[styleKey] = normalizeStyleRanges([...preserved, ...coloredAdditions]);
+      } else {
+        state.textStyles[styleKey] = normalizeStyleRanges([...(state.textStyles[styleKey] || []), ...additions]);
+      }
       render();
       input.focus({ preventScroll: true });
       try { input.setSelectionRange(selection.start, selection.end); } catch (_) {}
@@ -1599,8 +1714,8 @@
           next.push(item);
           return;
         }
-        if (item.start < start) next.push({ start: item.start, end: start, text: value.slice(item.start, start) });
-        if (item.end > end) next.push({ start: end, end: item.end, text: value.slice(end, item.end) });
+        if (item.start < start) next.push({ start: item.start, end: start, text: value.slice(item.start, start), ...(item.color ? { color: item.color } : {}) });
+        if (item.end > end) next.push({ start: end, end: item.end, text: value.slice(end, item.end), ...(item.color ? { color: item.color } : {}) });
       });
       return normalizeStyleRanges(next);
     }
@@ -1650,6 +1765,8 @@
       refs.pairInput.value = 'BLANC × ELPIS';
       refs.watermarkInput.value = 'SERENDIPITY';
       refs.accentColor.value = '#9cc8ff';
+      setLineColor('underline', '#9cc8ff', '하늘');
+      setLineColor('bar', '#9cc8ff', '하늘');
 
       const creatorSpeakers = [
         { name: '준희', color: '#9cc8ff', side: 'left' },
@@ -1731,9 +1848,22 @@
       setStatus(`화자 "${name}" 추가됨`);
     }
 
+    function syncCustomFontStyle(dataUrl = '') {
+      const id = 'dearly-custom-font-face';
+      document.getElementById(id)?.remove();
+      if (!dataUrl) return;
+      const style = document.createElement('style');
+      style.id = id;
+      // FontFace API로만 등록하면 html2canvas의 복제 문서에 폰트 정의가 전달되지 않을 수 있음.
+      // 동일한 data URL을 @font-face로도 남겨 PNG 저장용 복제 문서가 그대로 가져가게 함.
+      style.textContent = `@font-face{font-family:'DearlyCustomFont';src:url("${dataUrl}");font-display:block;}`;
+      document.head.appendChild(style);
+    }
+
     async function applyCustomFont(dataUrl, name = '사용자 폰트') {
       if (!dataUrl) {
         if (state.customFontFace) { document.fonts.delete(state.customFontFace); state.customFontFace = null; }
+        syncCustomFontStyle('');
         state.customFontData = '';
         state.customFontName = '';
         refs.customFontOption.disabled = true;
@@ -1743,6 +1873,7 @@
       }
       try {
         if (state.customFontFace) document.fonts.delete(state.customFontFace);
+        syncCustomFontStyle(dataUrl);
         const face = new FontFace('DearlyCustomFont', `url(${dataUrl})`);
         await face.load();
         document.fonts.add(face);
@@ -1753,6 +1884,7 @@
         refs.customFontOption.textContent = `사용자 폰트 · ${name}`;
         refs.customFontStatus.textContent = `${name} 사용 가능 · 저장 시 발췌 데이터에 포함됨`;
       } catch (err) {
+        syncCustomFontStyle('');
         console.error(err);
         setStatus('폰트를 불러오지 못했습니다. TTF/OTF/WOFF/WOFF2 파일인지 확인해 주세요.');
       }
@@ -1973,6 +2105,8 @@
         cardPadding: refs.cardPadding.value,
         bodyColor: refs.bodyColor.value,
         accentColor: refs.accentColor.value,
+        underlineColor: refs.underlineColor.value,
+        barColor: refs.barColor.value,
         bgType: refs.bgType.value,
         contentBoxMode: refs.contentBoxMode.value,
         bgColor1: refs.bgColor1.value,
@@ -2034,6 +2168,8 @@
         cardPadding: data.cardPadding,
         bodyColor: data.bodyColor,
         accentColor: data.accentColor,
+        underlineColor: data.underlineColor,
+        barColor: data.barColor,
         bgType: data.bgType,
         contentBoxMode: data.contentBoxMode,
         bgColor1: data.bgColor1,
@@ -2050,6 +2186,8 @@
       Object.entries(values).forEach(([key, value]) => {
         if (value !== undefined && value !== null && refs[key]) refs[key].value = value;
       });
+      setLineColor('underline', refs.underlineColor.value || '#9cc8ff', data.underlineColor ? '프리셋' : '하늘');
+      setLineColor('bar', refs.barColor.value || '#9cc8ff', data.barColor ? '프리셋' : '하늘');
       state.bgImageData = data.bgImageData || '';
       refs.bgImageInput.value = '';
 
@@ -2323,6 +2461,7 @@
           .map(item => ({
             start: Math.max(item.start, globalStart) - globalStart,
             end: Math.min(item.end, globalEnd) - globalStart,
+            ...(item.color ? { color: item.color } : {}),
           }))
           .filter(item => item.end > item.start);
       });
@@ -2347,9 +2486,12 @@
         const highlight = highlightRanges.find(range => range.start <= start && range.end >= end);
         const isQuote = activeIn(quoteRanges, start, end);
         const isBold = activeIn(localStyles.bold, start, end);
-        const isUnderline = activeIn(localStyles.underline, start, end);
-        const hasBar = activeIn(localStyles.bar, start, end);
-        const startsBar = hasBar && (localStyles.bar || []).some(range => range.start === start && range.end > start);
+        const underlineRange = (localStyles.underline || []).find(range => range.start <= start && range.end >= end);
+        const isUnderline = !!underlineRange;
+        const barRange = (localStyles.bar || []).find(range => range.start <= start && range.end >= end);
+        const hasBar = !!barRange;
+        const startsBarRange = hasBar ? (localStyles.bar || []).find(range => range.start === start && range.end > start) : null;
+        const startsBar = !!startsBarRange;
 
         if (!highlight && !isQuote && !isBold && !isUnderline && !startsBar) {
           target.appendChild(document.createTextNode(segment));
@@ -2369,10 +2511,13 @@
           node.style.color = 'inherit';
         }
         if (isBold) node.classList.add('excerpt-bold');
-        if (isUnderline) node.classList.add('excerpt-underline');
+        if (isUnderline) {
+          node.classList.add('excerpt-underline');
+          node.style.setProperty('--underline-color', underlineRange?.color || refs.accentColor.value);
+        }
         if (startsBar) {
           node.classList.add('excerpt-bar');
-          node.style.setProperty('--emphasis-color', refs.accentColor.value);
+          node.style.setProperty('--bar-color', startsBarRange?.color || barRange?.color || refs.accentColor.value);
         }
         target.appendChild(node);
       }
@@ -2717,6 +2862,8 @@
           cardPadding: refs.cardPadding.value,
           bodyColor: refs.bodyColor.value,
           accentColor: refs.accentColor.value,
+          underlineColor: refs.underlineColor.value,
+          barColor: refs.barColor.value,
           sideImagePlacement: refs.sideImagePlacement.value,
           sideImageFit: refs.sideImageFit.value,
           sideImageWidth: refs.sideImageWidth.value,
@@ -2857,6 +3004,8 @@
       refs.cardPadding.value = s.cardPadding || 34;
       refs.bodyColor.value = s.bodyColor || '#3e3038';
       refs.accentColor.value = s.accentColor || '#e98aac';
+      setLineColor('underline', s.underlineColor || '#9cc8ff', s.underlineColor ? '저장된 색상' : '하늘');
+      setLineColor('bar', s.barColor || '#9cc8ff', s.barColor ? '저장된 색상' : '하늘');
       refs.sideImagePlacement.value = s.sideImagePlacement || 'left';
       refs.sideImageFit.value = s.sideImageFit || 'cover';
       refs.sideImageWidth.value = s.sideImageWidth || 220;
@@ -2988,6 +3137,8 @@
       refs.contentMode.value = 'novel';
       refs.quoteMode.checked = true;
       refs.showSpeakerNames.checked = true;
+      setLineColor('underline', '#9cc8ff', '하늘');
+      setLineColor('bar', '#9cc8ff', '하늘');
       refs.titleInput.value = '';
       refs.dateInput.value = '';
       refs.locationInput.value = '';
@@ -3039,6 +3190,15 @@
     function prepareHighlightsForCanvas(clonedDoc) {
       // PNG 저장에서는 형광펜을 글자 단위의 낮은 배경 띠로 나눔.
       // 이렇게 하면 여러 줄로 감길 때 배경이 위쪽 줄의 글자를 덮는 html2canvas 오류를 피할 수 있음.
+      const exportStyle = clonedDoc.createElement('style');
+      exportStyle.textContent = `
+        * { animation: none !important; transition: none !important; }
+        .side-image-frame::after { display: none !important; }
+        .card-content-box { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+        .excerpt-underline { text-decoration-skip-ink: none !important; }
+      `;
+      clonedDoc.head?.appendChild(exportStyle);
+
       clonedDoc.querySelectorAll('.excerpt-highlight').forEach((highlightNode) => {
         const color = highlightNode.style.getPropertyValue('--highlight-color') || '#ffdce8';
         highlightNode.style.backgroundImage = 'none';
@@ -3078,32 +3238,78 @@
       });
     }
 
+    async function ensureHtml2Canvas() {
+      if (typeof html2canvas === 'function') return html2canvas;
+      const fallbackUrl = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      await new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[data-dearly-html2canvas-fallback]`);
+        if (existing) {
+          existing.addEventListener('load', resolve, { once: true });
+          existing.addEventListener('error', reject, { once: true });
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = fallbackUrl;
+        script.crossOrigin = 'anonymous';
+        script.dataset.dearlyHtml2canvasFallback = '1';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+      if (typeof html2canvas !== 'function') throw new Error('html2canvas not loaded');
+      return html2canvas;
+    }
+
+    async function canvasToPngBlob(canvas) {
+      if (typeof canvas.toBlob === 'function') {
+        const blob = await new Promise((resolve, reject) => {
+          canvas.toBlob(value => value ? resolve(value) : reject(new Error('PNG blob 생성 실패')), 'image/png');
+        });
+        return blob;
+      }
+      const dataUrl = canvas.toDataURL('image/png');
+      const response = await fetch(dataUrl);
+      return response.blob();
+    }
+
     async function exportPng() {
       setStatus('PNG 생성 중...');
       try {
-        if (typeof html2canvas !== 'function') throw new Error('html2canvas not loaded');
+        const html2canvasFn = await ensureHtml2Canvas();
         if (document.fonts?.ready) await document.fonts.ready;
+        if (state.customFontData && document.fonts?.load) {
+          try { await document.fonts.load('16px "DearlyCustomFont"'); } catch (_) {}
+        }
         fitTextToCard();
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
         const target = refs.exportTarget;
         const quality = Number(refs.exportScale.value || 2);
         const baseScale = 1080 / Math.max(1, target.getBoundingClientRect().width);
-        const canvas = await html2canvas(target, {
+        const canvas = await html2canvasFn(target, {
           useCORS: true,
-          allowTaint: true,
+          allowTaint: false,
           backgroundColor: null,
           scale: baseScale * quality,
+          logging: false,
+          removeContainer: true,
           onclone: (clonedDoc) => prepareHighlightsForCanvas(clonedDoc),
         });
+        if (!canvas || !canvas.width || !canvas.height) throw new Error('empty canvas');
+
+        const blob = await canvasToPngBlob(canvas);
+        const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.download = `${(refs.titleInput.value || 'excerpt').replace(/[\/:*?"<>|]/g, '_')}.png`;
-        link.href = canvas.toDataURL('image/png');
+        link.href = url;
+        document.body.appendChild(link);
         link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
         setStatus(`PNG 저장 시작됨 (${canvas.width}×${canvas.height})`);
       } catch (err) {
         console.error(err);
-        setStatus('PNG 저장 중 오류가 발생했습니다. 다시 시도해 주세요.');
+        setStatus('PNG 저장 중 오류가 발생했습니다. 인터넷 연결과 브라우저 상태를 확인한 뒤 다시 시도해 주세요.');
       }
     }
 
