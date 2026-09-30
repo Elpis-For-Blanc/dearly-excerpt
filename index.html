@@ -553,13 +553,51 @@
     }
     .excerpt-highlight {
       color: inherit;
-      /* 형광펜 때문에 줄바꿈 폭이 달라지지 않도록 레이아웃 여백은 주지 않음 */
+      /* 형광펜은 글자 뒤쪽 하단에만 그려 위/아래 줄의 글자를 가리지 않음 */
       padding: 0;
       margin: 0;
-      border-radius: .18em;
       line-height: inherit;
+      background-color: transparent !important;
+      background-image: linear-gradient(
+        to bottom,
+        transparent 52%,
+        var(--highlight-color, #ffdce8) 52%,
+        var(--highlight-color, #ffdce8) 90%,
+        transparent 90%
+      );
+      background-repeat: no-repeat;
       box-decoration-break: clone;
       -webkit-box-decoration-break: clone;
+    }
+    .excerpt-bold {
+      font-weight: 800 !important;
+    }
+    .excerpt-underline {
+      text-decoration-line: underline;
+      text-decoration-color: currentColor;
+      text-decoration-thickness: .08em;
+      text-underline-offset: .16em;
+      text-decoration-skip-ink: auto;
+    }
+    .excerpt-bar {
+      border-left: .16em solid var(--emphasis-color, currentColor);
+      padding-left: .38em;
+      margin-left: .08em;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+    .emphasis-toolbar {
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid #edd7e1;
+      border-radius: 14px;
+      background: #fffafa;
+    }
+    .emphasis-actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      align-items: center;
     }
 
     .content-box-soft {
@@ -733,6 +771,20 @@
             </div>
           </div>
           <p class="highlight-help">글자를 선택한 뒤 색을 누르면 바로 적용됩니다. 색을 먼저 고른 뒤 <strong>선택 부분 적용</strong>을 눌러도 됩니다. 별도 코드나 표시 문자는 입력창에 나타나지 않습니다.</p>
+        </div>
+        <div class="emphasis-toolbar">
+          <div class="highlight-toolbar-head">
+            <span class="highlight-toolbar-title">글자 강조</span>
+            <span style="font-size:11px;color:var(--muted);">형광펜과 함께 사용 가능</span>
+          </div>
+          <div class="emphasis-actions">
+            <button type="button" class="secondary small" id="boldSelectionBtn"><strong>B</strong> 굵게</button>
+            <button type="button" class="secondary small" id="underlineSelectionBtn"><u>U</u> 밑줄</button>
+            <button type="button" class="secondary small" id="barSelectionBtn">┃ 세로선</button>
+            <button type="button" class="secondary small" id="removeTextStyleBtn">선택 강조 해제</button>
+            <button type="button" class="secondary small" id="clearTextStylesBtn">글자 강조 모두 해제</button>
+          </div>
+          <p class="highlight-help">발췌문에서 원하는 부분을 선택한 뒤 강조 방식을 눌러 주세요. 굵게·밑줄·세로선은 서로 겹쳐 적용할 수 있습니다.</p>
         </div>
       </section>
 
@@ -1043,6 +1095,7 @@
       customFontName: '',
       customFontFace: null,
       highlights: [],
+      textStyles: { bold: [], underline: [], bar: [] },
       lastHighlightSelection: null,
       editingId: null,
     };
@@ -1050,7 +1103,7 @@
     const $ = (id) => document.getElementById(id);
 
     const refs = {
-      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), showSpeakerNames: $('showSpeakerNames'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), highlightSelectionLabel: $('highlightSelectionLabel'), applyHighlightBtn: $('applyHighlightBtn'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
+      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), showSpeakerNames: $('showSpeakerNames'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), highlightSelectionLabel: $('highlightSelectionLabel'), applyHighlightBtn: $('applyHighlightBtn'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), boldSelectionBtn: $('boldSelectionBtn'), underlineSelectionBtn: $('underlineSelectionBtn'), barSelectionBtn: $('barSelectionBtn'), removeTextStyleBtn: $('removeTextStyleBtn'), clearTextStylesBtn: $('clearTextStylesBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
       locationInput: $('locationInput'), pairInput: $('pairInput'), tagsInput: $('tagsInput'), memoInput: $('memoInput'), creatorPresetBtn: $('creatorPresetBtn'),
       speakerName: $('speakerName'), speakerColor: $('speakerColor'), speakerList: $('speakerList'),
       addSpeakerBtn: $('addSpeakerBtn'), resetSpeakersBtn: $('resetSpeakersBtn'),
@@ -1095,11 +1148,13 @@
       });
       refs.excerptInput.addEventListener('input', () => {
         reconcileHighlights();
+        reconcileTextStyles();
         validateRememberedHighlightSelection();
         render();
       });
       refs.excerptInput.addEventListener('change', () => {
         reconcileHighlights();
+        reconcileTextStyles();
         validateRememberedHighlightSelection();
         render();
       });
@@ -1134,6 +1189,15 @@
       refs.applyHighlightBtn.addEventListener('click', applyHighlightToSelection);
       refs.removeHighlightBtn.addEventListener('click', removeHighlightFromSelection);
       refs.clearHighlightsBtn.addEventListener('click', clearAllHighlights);
+
+      [refs.boldSelectionBtn, refs.underlineSelectionBtn, refs.barSelectionBtn, refs.removeTextStyleBtn, refs.clearTextStylesBtn].forEach(button => {
+        button.addEventListener('mousedown', (event) => event.preventDefault());
+      });
+      refs.boldSelectionBtn.addEventListener('click', () => applyTextStyleToSelection('bold'));
+      refs.underlineSelectionBtn.addEventListener('click', () => applyTextStyleToSelection('underline'));
+      refs.barSelectionBtn.addEventListener('click', () => applyTextStyleToSelection('bar'));
+      refs.removeTextStyleBtn.addEventListener('click', removeTextStylesFromSelection);
+      refs.clearTextStylesBtn.addEventListener('click', clearAllTextStyles);
 
       refs.baseFontSize.addEventListener('input', () => $('baseFontSizeVal').textContent = refs.baseFontSize.value);
       refs.lineHeight.addEventListener('input', () => $('lineHeightVal').textContent = refs.lineHeight.value);
@@ -1422,6 +1486,160 @@
       state.highlights = [];
       render();
       setStatus('형광펜 전체 해제됨');
+    }
+
+    function getSelectionStyleRanges(start, end) {
+      const value = refs.excerptInput.value;
+      const ranges = [];
+      let cursor = start;
+      while (cursor < end) {
+        const nextBreak = value.indexOf('\n', cursor);
+        const segmentEnd = nextBreak === -1 ? end : Math.min(end, nextBreak);
+        let segmentStart = cursor;
+        const lineStart = value.lastIndexOf('\n', Math.max(0, segmentStart - 1)) + 1;
+
+        if (segmentStart === lineStart) {
+          const segmentText = value.slice(segmentStart, segmentEnd);
+          const speakerMatch = segmentText.match(/^([^:：]{1,24}[:：]\s*)/);
+          if (speakerMatch) segmentStart += speakerMatch[0].length;
+        }
+
+        while (segmentStart < segmentEnd && /\s/.test(value[segmentStart])) segmentStart++;
+        let trimmedEnd = segmentEnd;
+        while (trimmedEnd > segmentStart && /\s/.test(value[trimmedEnd - 1])) trimmedEnd--;
+        if (trimmedEnd > segmentStart) {
+          ranges.push({ start: segmentStart, end: trimmedEnd, text: value.slice(segmentStart, trimmedEnd) });
+        }
+        cursor = nextBreak === -1 || nextBreak >= end ? end : nextBreak + 1;
+      }
+      return ranges;
+    }
+
+    function normalizeStyleRanges(ranges) {
+      const value = refs.excerptInput.value;
+      const sorted = (ranges || [])
+        .filter(item => item && item.end > item.start)
+        .map(item => ({ start: Number(item.start), end: Number(item.end), text: value.slice(Number(item.start), Number(item.end)) }))
+        .sort((a, b) => a.start - b.start || a.end - b.end);
+      const merged = [];
+      sorted.forEach(item => {
+        const last = merged[merged.length - 1];
+        if (last && item.start <= last.end) {
+          last.end = Math.max(last.end, item.end);
+          last.text = value.slice(last.start, last.end);
+        } else {
+          merged.push({ ...item });
+        }
+      });
+      return merged;
+    }
+
+    function reconcileSingleStyleRanges(ranges) {
+      const value = refs.excerptInput.value;
+      const used = [];
+      const next = [];
+      (ranges || []).forEach(item => {
+        const text = item.text || '';
+        if (!text) return;
+        let start = Number(item.start) || 0;
+        let end = Number(item.end) || start + text.length;
+        if (value.slice(start, end) !== text) {
+          const nearFrom = Math.max(0, start - 80);
+          let found = value.indexOf(text, nearFrom);
+          if (found < 0) found = value.indexOf(text);
+          if (found < 0) return;
+          start = found;
+          end = found + text.length;
+        }
+        if (used.some(r => start < r.end && end > r.start)) return;
+        used.push({ start, end });
+        next.push({ start, end, text: value.slice(start, end) });
+      });
+      return normalizeStyleRanges(next);
+    }
+
+    function reconcileTextStyles() {
+      const current = state.textStyles || {};
+      state.textStyles = {
+        bold: reconcileSingleStyleRanges(current.bold || []),
+        underline: reconcileSingleStyleRanges(current.underline || []),
+        bar: reconcileSingleStyleRanges(current.bar || []),
+      };
+    }
+
+    function applyTextStyleToSelection(styleKey) {
+      const labelMap = { bold: '굵게', underline: '밑줄', bar: '세로선' };
+      const input = refs.excerptInput;
+      const selection = getRememberedOrLiveHighlightSelection();
+      if (!selection || selection.start === selection.end) {
+        setStatus(`${labelMap[styleKey] || '강조'}를 적용할 글자를 먼저 선택해 주세요.`);
+        input.focus();
+        return;
+      }
+      const additions = getSelectionStyleRanges(selection.start, selection.end);
+      if (!additions.length) {
+        setStatus('선택한 영역에 적용할 글자가 없습니다.');
+        return;
+      }
+      if (!state.textStyles) state.textStyles = { bold: [], underline: [], bar: [] };
+      state.textStyles[styleKey] = normalizeStyleRanges([...(state.textStyles[styleKey] || []), ...additions]);
+      render();
+      input.focus({ preventScroll: true });
+      try { input.setSelectionRange(selection.start, selection.end); } catch (_) {}
+      state.lastHighlightSelection = { ...selection, text: input.value.slice(selection.start, selection.end) };
+      updateHighlightSelectionLabel();
+      setStatus(`${labelMap[styleKey] || '강조'} 적용됨`);
+    }
+
+    function subtractSelectionFromStyleRanges(ranges, start, end) {
+      const value = refs.excerptInput.value;
+      const next = [];
+      (ranges || []).forEach(item => {
+        if (item.end <= start || item.start >= end) {
+          next.push(item);
+          return;
+        }
+        if (item.start < start) next.push({ start: item.start, end: start, text: value.slice(item.start, start) });
+        if (item.end > end) next.push({ start: end, end: item.end, text: value.slice(end, item.end) });
+      });
+      return normalizeStyleRanges(next);
+    }
+
+    function removeTextStylesFromSelection() {
+      const input = refs.excerptInput;
+      const selection = getRememberedOrLiveHighlightSelection();
+      if (!selection || selection.start === selection.end) {
+        setStatus('강조를 해제할 글자를 먼저 선택해 주세요.');
+        input.focus();
+        return;
+      }
+      const before = JSON.stringify(state.textStyles || {});
+      state.textStyles = state.textStyles || { bold: [], underline: [], bar: [] };
+      ['bold', 'underline', 'bar'].forEach(key => {
+        state.textStyles[key] = subtractSelectionFromStyleRanges(state.textStyles[key] || [], selection.start, selection.end);
+      });
+      if (before === JSON.stringify(state.textStyles)) {
+        setStatus('선택한 부분에 해제할 글자 강조 없음');
+      } else {
+        render();
+        setStatus('선택 영역 글자 강조 해제됨');
+      }
+      input.focus({ preventScroll: true });
+      try { input.setSelectionRange(selection.start, selection.end); } catch (_) {}
+      state.lastHighlightSelection = { ...selection, text: input.value.slice(selection.start, selection.end) };
+      updateHighlightSelectionLabel();
+    }
+
+    function clearAllTextStyles() {
+      const styles = state.textStyles || {};
+      const hasAny = ['bold', 'underline', 'bar'].some(key => (styles[key] || []).length);
+      if (!hasAny) {
+        setStatus('해제할 글자 강조 없음');
+        return;
+      }
+      state.textStyles = { bold: [], underline: [], bar: [] };
+      render();
+      setStatus('글자 강조 전체 해제됨');
     }
 
     function setStatus(msg) {
@@ -2081,10 +2299,7 @@
       const value = String(text || '');
       if (!value) return;
 
-      // 형광펜과 대사색을 같은 좌표계에서 계산함.
-      // 형광펜이 대사 중간만 걸쳐도 원래 화자색이 풀리지 않도록 처리함.
       const quoteRanges = getQuoteRanges(value);
-
       if (globalStart === null || globalStart === undefined) {
         appendQuoteStyledText(target, value, quoteColor);
         return;
@@ -2098,52 +2313,66 @@
           end: Math.min(item.end, globalEnd) - globalStart,
           color: item.color || '#ffdce8',
         }))
-        .filter(item => item.end > item.start)
-        .sort((a, b) => a.start - b.start);
+        .filter(item => item.end > item.start);
+
+      const localStyles = {};
+      const styleSource = state.textStyles || {};
+      ['bold', 'underline', 'bar'].forEach(key => {
+        localStyles[key] = (styleSource[key] || [])
+          .filter(item => item.start < globalEnd && item.end > globalStart)
+          .map(item => ({
+            start: Math.max(item.start, globalStart) - globalStart,
+            end: Math.min(item.end, globalEnd) - globalStart,
+          }))
+          .filter(item => item.end > item.start);
+      });
 
       const boundaries = new Set([0, value.length]);
-      highlightRanges.forEach(range => {
-        boundaries.add(range.start);
-        boundaries.add(range.end);
-      });
-      quoteRanges.forEach(range => {
-        boundaries.add(range.start);
-        boundaries.add(range.end);
-      });
+      highlightRanges.forEach(range => { boundaries.add(range.start); boundaries.add(range.end); });
+      quoteRanges.forEach(range => { boundaries.add(range.start); boundaries.add(range.end); });
+      Object.values(localStyles).flat().forEach(range => { boundaries.add(range.start); boundaries.add(range.end); });
 
       const points = [...boundaries]
         .filter(n => Number.isFinite(n) && n >= 0 && n <= value.length)
         .sort((a, b) => a - b);
-
       const dialogueColor = quoteColor || refs.accentColor.value;
+
+      const activeIn = (ranges, start, end) => (ranges || []).some(range => range.start <= start && range.end >= end);
 
       for (let i = 0; i < points.length - 1; i++) {
         const start = points[i];
         const end = points[i + 1];
         if (end <= start) continue;
-
         const segment = value.slice(start, end);
         const highlight = highlightRanges.find(range => range.start <= start && range.end >= end);
-        const isQuote = quoteRanges.some(range => range.start <= start && range.end >= end);
+        const isQuote = activeIn(quoteRanges, start, end);
+        const isBold = activeIn(localStyles.bold, start, end);
+        const isUnderline = activeIn(localStyles.underline, start, end);
+        const hasBar = activeIn(localStyles.bar, start, end);
+        const startsBar = hasBar && (localStyles.bar || []).some(range => range.start === start && range.end > start);
 
-        let node;
-        if (highlight) {
-          node = document.createElement('mark');
-          node.className = 'excerpt-highlight';
-          node.style.backgroundColor = highlight.color;
-        } else if (isQuote) {
-          node = document.createElement('span');
-        } else {
+        if (!highlight && !isQuote && !isBold && !isUnderline && !startsBar) {
           target.appendChild(document.createTextNode(segment));
           continue;
         }
 
+        const node = document.createElement('span');
         node.textContent = segment;
+        if (highlight) {
+          node.classList.add('excerpt-highlight');
+          node.style.setProperty('--highlight-color', highlight.color);
+        }
         if (isQuote) {
           node.style.color = dialogueColor;
           node.style.fontWeight = '700';
         } else {
           node.style.color = 'inherit';
+        }
+        if (isBold) node.classList.add('excerpt-bold');
+        if (isUnderline) node.classList.add('excerpt-underline');
+        if (startsBar) {
+          node.classList.add('excerpt-bar');
+          node.style.setProperty('--emphasis-color', refs.accentColor.value);
         }
         target.appendChild(node);
       }
@@ -2467,6 +2696,7 @@
         quoteMode: refs.quoteMode.checked,
         showSpeakerNames: refs.showSpeakerNames.checked,
         highlights: state.highlights,
+        textStyles: state.textStyles,
         title: refs.titleInput.value,
         date: refs.dateInput.value,
         location: refs.locationInput.value,
@@ -2586,7 +2816,15 @@
       const legacy = extractLegacyHighlights(item.excerpt || '');
       refs.excerptInput.value = legacy.text;
       state.highlights = Array.isArray(item.highlights) ? item.highlights.map(v => ({ ...v })) : legacy.highlights;
+      state.textStyles = item.textStyles && typeof item.textStyles === 'object'
+        ? {
+            bold: Array.isArray(item.textStyles.bold) ? item.textStyles.bold.map(v => ({ ...v })) : [],
+            underline: Array.isArray(item.textStyles.underline) ? item.textStyles.underline.map(v => ({ ...v })) : [],
+            bar: Array.isArray(item.textStyles.bar) ? item.textStyles.bar.map(v => ({ ...v })) : [],
+          }
+        : { bold: [], underline: [], bar: [] };
       reconcileHighlights();
+      reconcileTextStyles();
       refs.contentMode.value = item.contentMode || 'novel';
       refs.quoteMode.checked = item.quoteMode ?? true;
       refs.showSpeakerNames.checked = item.showSpeakerNames ?? true;
@@ -2736,6 +2974,7 @@
       state.customFontData = '';
       state.customFontName = '';
       state.highlights = [];
+      state.textStyles = { bold: [], underline: [], bar: [] };
       state.lastHighlightSelection = null;
       updateHighlightSelectionLabel();
       if (state.customFontFace) { document.fonts.delete(state.customFontFace); state.customFontFace = null; }
@@ -2798,20 +3037,17 @@
     }
 
     function prepareHighlightsForCanvas(clonedDoc) {
-      // html2canvas는 여러 줄에 걸친 inline 배경을 하나의 큰 사각형처럼
-      // 렌더링하는 경우가 있어 PNG에서 형광펜이 뭉개질 수 있음.
-      // 내보내기용 복제 DOM에서만 형광펜 배경을 토큰 단위로 나눠 렌더링함.
-      clonedDoc.querySelectorAll('mark.excerpt-highlight').forEach((mark) => {
-        const color = mark.style.backgroundColor || '#ffdce8';
-        mark.style.backgroundColor = 'transparent';
-        mark.style.padding = '0';
-        mark.style.margin = '0';
-        mark.style.borderRadius = '0';
-        mark.style.boxDecorationBreak = 'slice';
-        mark.style.webkitBoxDecorationBreak = 'slice';
+      // PNG 저장에서는 형광펜을 글자 단위의 낮은 배경 띠로 나눔.
+      // 이렇게 하면 여러 줄로 감길 때 배경이 위쪽 줄의 글자를 덮는 html2canvas 오류를 피할 수 있음.
+      clonedDoc.querySelectorAll('.excerpt-highlight').forEach((highlightNode) => {
+        const color = highlightNode.style.getPropertyValue('--highlight-color') || '#ffdce8';
+        highlightNode.style.backgroundImage = 'none';
+        highlightNode.style.backgroundColor = 'transparent';
+        highlightNode.style.padding = '0';
+        highlightNode.style.margin = '0';
 
         const textNodes = [];
-        const walker = clonedDoc.createTreeWalker(mark, NodeFilter.SHOW_TEXT);
+        const walker = clonedDoc.createTreeWalker(highlightNode, NodeFilter.SHOW_TEXT);
         let node;
         while ((node = walker.nextNode())) textNodes.push(node);
 
@@ -2819,17 +3055,22 @@
           const value = textNode.nodeValue || '';
           if (!value) return;
           const frag = clonedDoc.createDocumentFragment();
-          const tokens = value.match(/\s+|[^\s]+/g) || [value];
-          tokens.forEach((token) => {
+          Array.from(value).forEach((char) => {
             const piece = clonedDoc.createElement('span');
             piece.className = 'excerpt-highlight-export-piece';
-            piece.textContent = token;
-            piece.style.backgroundColor = color;
-            piece.style.borderRadius = '.12em';
+            piece.textContent = char;
+            piece.style.backgroundColor = 'transparent';
+            piece.style.backgroundImage = `linear-gradient(to bottom, transparent 52%, ${color} 52%, ${color} 90%, transparent 90%)`;
+            piece.style.backgroundRepeat = 'no-repeat';
             piece.style.padding = '0';
             piece.style.margin = '0';
             piece.style.lineHeight = 'inherit';
             piece.style.color = 'inherit';
+            piece.style.fontWeight = 'inherit';
+            piece.style.textDecoration = 'inherit';
+            piece.style.display = 'inline';
+            piece.style.boxDecorationBreak = 'clone';
+            piece.style.webkitBoxDecorationBreak = 'clone';
             frag.appendChild(piece);
           });
           textNode.parentNode.replaceChild(frag, textNode);
