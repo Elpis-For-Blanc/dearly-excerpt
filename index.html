@@ -571,6 +571,9 @@
     .excerpt-bold {
       font-weight: 800 !important;
     }
+    .excerpt-italic {
+      font-style: italic !important;
+    }
     .excerpt-underline {
       text-decoration-line: underline;
       text-decoration-color: var(--underline-color, currentColor);
@@ -761,10 +764,10 @@
             </select>
           </div>
         </div>
-        <p class="desc" id="modeHelp">소설 모드는 일반 발췌 형식입니다. 화자는 <strong>이름:</strong> 형식으로 입력하면 자동으로 구분됩니다.</p>
+        <p class="desc" id="modeHelp">소설 모드는 일반 발췌 형식입니다. <strong>등록된 화자 이름:</strong> 형식일 때만 화자로 구분됩니다.</p>
         <div class="mode-pill" id="modePill">✦ 소설 모드</div>
         <label for="excerptInput" style="margin-top:10px;">발췌문 입력</label>
-        <textarea id="excerptInput" placeholder="발췌하고 싶은 부분만 입력해 주세요.&#10;&#10;A: 오늘은 조금 천천히 가자.&#10;B: 그래, 서두르지 말자.&#10;창밖으로 늦은 오후의 빛이 번졌다."></textarea>
+        <textarea id="excerptInput" placeholder="발췌하고 싶은 부분만 입력해 주세요.&#10;&#10;화자를 등록한 경우: 등록한 이름: 대사 형식 사용 가능&#10;시간: 오후 3시처럼 일반 문장의 콜론은 그대로 표시됩니다."></textarea>
         <div class="inline"><input type="checkbox" id="quoteMode" checked><label for="quoteMode" style="margin:0;font-weight:500;">대사 자동 감지 (“ ”, \" \" 쌍따옴표만)</label></div>
         <div class="inline"><input type="checkbox" id="showSpeakerNames" checked><label for="showSpeakerNames" style="margin:0;font-weight:500;">화자 이름 표시</label></div>
         <div class="highlight-toolbar">
@@ -809,6 +812,7 @@
           </div>
           <div class="emphasis-actions">
             <button type="button" class="secondary small" id="boldSelectionBtn"><strong>B</strong> 굵게</button>
+            <button type="button" class="secondary small" id="italicSelectionBtn"><em>I</em> 기울임</button>
             <button type="button" class="secondary small" id="underlineSelectionBtn"><u>U</u> 밑줄</button>
             <button type="button" class="secondary small" id="barSelectionBtn">┃ 세로선</button>
             <button type="button" class="secondary small" id="removeTextStyleBtn">선택 강조 해제</button>
@@ -844,7 +848,7 @@
               <div class="highlight-custom-row"><div style="flex:1;"><label for="barColor">직접 색상</label><input id="barColor" type="color" value="#9cc8ff" style="width:100%;height:38px;border-radius:10px;border:1px solid #ead2dd;background:#fff;padding:4px;"></div></div>
             </div>
           </div>
-          <p class="highlight-help">발췌문에서 원하는 부분을 선택한 뒤 강조 방식을 눌러 주세요. 밑줄·세로선은 각각 프리셋 또는 직접 선택한 색상으로 적용되며 서로 겹쳐 사용할 수 있습니다.</p>
+          <p class="highlight-help">발췌문에서 원하는 부분을 선택한 뒤 강조 방식을 눌러 주세요. 굵게·기울임·밑줄·세로선을 함께 사용할 수 있으며, 밑줄·세로선은 각각 색상을 선택할 수 있습니다.</p>
         </div>
       </section>
 
@@ -1155,7 +1159,7 @@
       customFontName: '',
       customFontFace: null,
       highlights: [],
-      textStyles: { bold: [], underline: [], bar: [] },
+      textStyles: { bold: [], italic: [], underline: [], bar: [] },
       lastHighlightSelection: null,
       editingId: null,
     };
@@ -1163,7 +1167,7 @@
     const $ = (id) => document.getElementById(id);
 
     const refs = {
-      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), showSpeakerNames: $('showSpeakerNames'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), highlightSelectionLabel: $('highlightSelectionLabel'), applyHighlightBtn: $('applyHighlightBtn'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), boldSelectionBtn: $('boldSelectionBtn'), underlineSelectionBtn: $('underlineSelectionBtn'), barSelectionBtn: $('barSelectionBtn'), underlineColorSwatches: $('underlineColorSwatches'), underlineColor: $('underlineColor'), underlineColorLabel: $('underlineColorLabel'), barColorSwatches: $('barColorSwatches'), barColor: $('barColor'), barColorLabel: $('barColorLabel'), removeTextStyleBtn: $('removeTextStyleBtn'), clearTextStylesBtn: $('clearTextStylesBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
+      excerptInput: $('excerptInput'), contentMode: $('contentMode'), modeHelp: $('modeHelp'), modePill: $('modePill'), quoteMode: $('quoteMode'), showSpeakerNames: $('showSpeakerNames'), highlightSwatches: $('highlightSwatches'), highlightColor: $('highlightColor'), highlightColorLabel: $('highlightColorLabel'), highlightSelectionLabel: $('highlightSelectionLabel'), applyHighlightBtn: $('applyHighlightBtn'), removeHighlightBtn: $('removeHighlightBtn'), clearHighlightsBtn: $('clearHighlightsBtn'), boldSelectionBtn: $('boldSelectionBtn'), italicSelectionBtn: $('italicSelectionBtn'), underlineSelectionBtn: $('underlineSelectionBtn'), barSelectionBtn: $('barSelectionBtn'), underlineColorSwatches: $('underlineColorSwatches'), underlineColor: $('underlineColor'), underlineColorLabel: $('underlineColorLabel'), barColorSwatches: $('barColorSwatches'), barColor: $('barColor'), barColorLabel: $('barColorLabel'), removeTextStyleBtn: $('removeTextStyleBtn'), clearTextStylesBtn: $('clearTextStylesBtn'), titleInput: $('titleInput'), dateInput: $('dateInput'),
       locationInput: $('locationInput'), pairInput: $('pairInput'), tagsInput: $('tagsInput'), memoInput: $('memoInput'), creatorPresetBtn: $('creatorPresetBtn'),
       speakerName: $('speakerName'), speakerColor: $('speakerColor'), speakerList: $('speakerList'),
       addSpeakerBtn: $('addSpeakerBtn'), resetSpeakersBtn: $('resetSpeakersBtn'),
@@ -1253,10 +1257,11 @@
       bindLineColorPalette('underline');
       bindLineColorPalette('bar');
 
-      [refs.boldSelectionBtn, refs.underlineSelectionBtn, refs.barSelectionBtn, refs.removeTextStyleBtn, refs.clearTextStylesBtn].forEach(button => {
+      [refs.boldSelectionBtn, refs.italicSelectionBtn, refs.underlineSelectionBtn, refs.barSelectionBtn, refs.removeTextStyleBtn, refs.clearTextStylesBtn].forEach(button => {
         button.addEventListener('mousedown', (event) => event.preventDefault());
       });
       refs.boldSelectionBtn.addEventListener('click', () => applyTextStyleToSelection('bold'));
+      refs.italicSelectionBtn.addEventListener('click', () => applyTextStyleToSelection('italic'));
       refs.underlineSelectionBtn.addEventListener('click', () => applyTextStyleToSelection('underline'));
       refs.barSelectionBtn.addEventListener('click', () => applyTextStyleToSelection('bar'));
       refs.removeTextStyleBtn.addEventListener('click', removeTextStylesFromSelection);
@@ -1669,13 +1674,14 @@
       const current = state.textStyles || {};
       state.textStyles = {
         bold: reconcileSingleStyleRanges(current.bold || []),
+        italic: reconcileSingleStyleRanges(current.italic || []),
         underline: reconcileSingleStyleRanges(current.underline || []),
         bar: reconcileSingleStyleRanges(current.bar || []),
       };
     }
 
     function applyTextStyleToSelection(styleKey) {
-      const labelMap = { bold: '굵게', underline: '밑줄', bar: '세로선' };
+      const labelMap = { bold: '굵게', italic: '기울임', underline: '밑줄', bar: '세로선' };
       const input = refs.excerptInput;
       const selection = getRememberedOrLiveHighlightSelection();
       if (!selection || selection.start === selection.end) {
@@ -1688,7 +1694,7 @@
         setStatus('선택한 영역에 적용할 글자가 없습니다.');
         return;
       }
-      if (!state.textStyles) state.textStyles = { bold: [], underline: [], bar: [] };
+      if (!state.textStyles) state.textStyles = { bold: [], italic: [], underline: [], bar: [] };
       if (styleKey === 'underline' || styleKey === 'bar') {
         const color = styleKey === 'underline' ? refs.underlineColor.value : refs.barColor.value;
         const coloredAdditions = additions.map(item => ({ ...item, color }));
@@ -1728,8 +1734,8 @@
         return;
       }
       const before = JSON.stringify(state.textStyles || {});
-      state.textStyles = state.textStyles || { bold: [], underline: [], bar: [] };
-      ['bold', 'underline', 'bar'].forEach(key => {
+      state.textStyles = state.textStyles || { bold: [], italic: [], underline: [], bar: [] };
+      ['bold', 'italic', 'underline', 'bar'].forEach(key => {
         state.textStyles[key] = subtractSelectionFromStyleRanges(state.textStyles[key] || [], selection.start, selection.end);
       });
       if (before === JSON.stringify(state.textStyles)) {
@@ -1746,12 +1752,12 @@
 
     function clearAllTextStyles() {
       const styles = state.textStyles || {};
-      const hasAny = ['bold', 'underline', 'bar'].some(key => (styles[key] || []).length);
+      const hasAny = ['bold', 'italic', 'underline', 'bar'].some(key => (styles[key] || []).length);
       if (!hasAny) {
         setStatus('해제할 글자 강조 없음');
         return;
       }
-      state.textStyles = { bold: [], underline: [], bar: [] };
+      state.textStyles = { bold: [], italic: [], underline: [], bar: [] };
       render();
       setStatus('글자 강조 전체 해제됨');
     }
@@ -2266,14 +2272,18 @@
         const lineStart = match.index;
         const speakerMatch = line.match(/^([^:：]{1,24})[:：](\s*)(.+)$/);
         if (speakerMatch) {
-          const prefixLength = speakerMatch[1].length + 1 + speakerMatch[2].length;
-          items.push({
-            type: 'speaker',
-            speaker: speakerMatch[1].trim(),
-            text: speakerMatch[3],
-            textStart: lineStart + prefixLength,
-          });
-          continue;
+          const candidate = speakerMatch[1].trim();
+          const registered = (state.speakers || []).find(speaker => String(speaker.name || '').trim() === candidate);
+          if (registered) {
+            const prefixLength = speakerMatch[1].length + 1 + speakerMatch[2].length;
+            items.push({
+              type: 'speaker',
+              speaker: registered.name,
+              text: speakerMatch[3],
+              textStart: lineStart + prefixLength,
+            });
+            continue;
+          }
         }
         const monoMatch = line.match(/^[\[(](.*?)[\])]$/);
         if (monoMatch) {
@@ -2327,8 +2337,8 @@
       refs.excerptContent.classList.toggle('chat-mode', isChat);
 
       refs.modeHelp.innerHTML = isChat
-        ? '채팅 모드는 <strong>이름: 내용</strong>을 말풍선으로 표시합니다. 화자 설정에서 왼쪽/오른쪽 방향을 정할 수 있음.'
-        : '소설 모드는 일반 발췌 형식입니다. 화자는 <strong>이름:</strong> 형식으로 입력하면 자동으로 구분됩니다.';
+        ? '채팅 모드는 <strong>등록된 화자 이름: 내용</strong>만 말풍선으로 표시합니다. 일반 문장의 콜론(:)은 화자로 인식하지 않습니다.'
+        : '소설 모드는 일반 발췌 형식입니다. <strong>등록된 화자 이름:</strong> 형식일 때만 화자로 구분됩니다.';
       if (refs.modePill) {
         refs.modePill.textContent = isChat ? '💬 채팅 모드' : '✦ 소설 모드';
         refs.modePill.style.color = refs.accentColor.value;
@@ -2454,7 +2464,7 @@
 
       const localStyles = {};
       const styleSource = state.textStyles || {};
-      ['bold', 'underline', 'bar'].forEach(key => {
+      ['bold', 'italic', 'underline', 'bar'].forEach(key => {
         localStyles[key] = (styleSource[key] || [])
           .filter(item => item.start < globalEnd && item.end > globalStart)
           .map(item => ({
@@ -2485,6 +2495,7 @@
         const highlight = highlightRanges.find(range => range.start <= start && range.end >= end);
         const isQuote = activeIn(quoteRanges, start, end);
         const isBold = activeIn(localStyles.bold, start, end);
+        const isItalic = activeIn(localStyles.italic, start, end);
         const underlineRange = (localStyles.underline || []).find(range => range.start <= start && range.end >= end);
         const isUnderline = !!underlineRange;
         const barRange = (localStyles.bar || []).find(range => range.start <= start && range.end >= end);
@@ -2492,7 +2503,7 @@
         const startsBarRange = hasBar ? (localStyles.bar || []).find(range => range.start === start && range.end > start) : null;
         const startsBar = !!startsBarRange;
 
-        if (!highlight && !isQuote && !isBold && !isUnderline && !startsBar) {
+        if (!highlight && !isQuote && !isBold && !isItalic && !isUnderline && !startsBar) {
           target.appendChild(document.createTextNode(segment));
           continue;
         }
@@ -2510,6 +2521,7 @@
           node.style.color = 'inherit';
         }
         if (isBold) node.classList.add('excerpt-bold');
+        if (isItalic) node.classList.add('excerpt-italic');
         if (isUnderline) {
           node.classList.add('excerpt-underline');
           node.style.setProperty('--underline-color', underlineRange?.color || refs.accentColor.value);
@@ -2965,10 +2977,11 @@
       state.textStyles = item.textStyles && typeof item.textStyles === 'object'
         ? {
             bold: Array.isArray(item.textStyles.bold) ? item.textStyles.bold.map(v => ({ ...v })) : [],
+            italic: Array.isArray(item.textStyles.italic) ? item.textStyles.italic.map(v => ({ ...v })) : [],
             underline: Array.isArray(item.textStyles.underline) ? item.textStyles.underline.map(v => ({ ...v })) : [],
             bar: Array.isArray(item.textStyles.bar) ? item.textStyles.bar.map(v => ({ ...v })) : [],
           }
-        : { bold: [], underline: [], bar: [] };
+        : { bold: [], italic: [], underline: [], bar: [] };
       reconcileHighlights();
       reconcileTextStyles();
       refs.contentMode.value = item.contentMode || 'novel';
@@ -3122,7 +3135,7 @@
       state.customFontData = '';
       state.customFontName = '';
       state.highlights = [];
-      state.textStyles = { bold: [], underline: [], bar: [] };
+      state.textStyles = { bold: [], italic: [], underline: [], bar: [] };
       state.lastHighlightSelection = null;
       updateHighlightSelectionLabel();
       if (state.customFontFace) { document.fonts.delete(state.customFontFace); state.customFontFace = null; }
@@ -3301,7 +3314,20 @@
         const blob = await canvasToPngBlob(canvas);
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.download = `${(refs.titleInput.value || 'excerpt').replace(/[\/:*?"<>|]/g, '_')}.png`;
+        const safeBaseName = (refs.titleInput.value || 'dearly-excerpt')
+          .trim()
+          .replace(/[\/:*?"<>|]/g, '_')
+          .replace(/\s+/g, '_') || 'dearly-excerpt';
+        const randomPart = (() => {
+          if (window.crypto?.getRandomValues) {
+            const value = new Uint32Array(1);
+            window.crypto.getRandomValues(value);
+            return String(value[0] % 10000).padStart(4, '0');
+          }
+          return String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+        })();
+        const uniqueNumber = `${String(Date.now()).slice(-6)}${randomPart}`;
+        link.download = `${safeBaseName}_${uniqueNumber}.png`;
         link.href = url;
         document.body.appendChild(link);
         link.click();
