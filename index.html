@@ -1479,8 +1479,14 @@
 
         if (segmentStart === lineStart) {
           const segmentText = value.slice(segmentStart, segmentEnd);
-          const speakerMatch = segmentText.match(/^([^:：]{1,24}[:：]\s*)/);
-          if (speakerMatch) segmentStart += speakerMatch[0].length;
+          const speakerMatch = segmentText.match(/^([^:：]{1,24})[:：](\s*)/);
+          if (speakerMatch) {
+            const candidate = speakerMatch[1].trim();
+            const isRegisteredSpeaker = (state.speakers || []).some(
+              speaker => String(speaker.name || '').trim() === candidate
+            );
+            if (isRegisteredSpeaker) segmentStart += speakerMatch[0].length;
+          }
         }
 
         while (segmentStart < segmentEnd && /\s/.test(value[segmentStart])) segmentStart++;
@@ -1606,8 +1612,14 @@
 
         if (segmentStart === lineStart) {
           const segmentText = value.slice(segmentStart, segmentEnd);
-          const speakerMatch = segmentText.match(/^([^:：]{1,24}[:：]\s*)/);
-          if (speakerMatch) segmentStart += speakerMatch[0].length;
+          const speakerMatch = segmentText.match(/^([^:：]{1,24})[:：](\s*)/);
+          if (speakerMatch) {
+            const candidate = speakerMatch[1].trim();
+            const isRegisteredSpeaker = (state.speakers || []).some(
+              speaker => String(speaker.name || '').trim() === candidate
+            );
+            if (isRegisteredSpeaker) segmentStart += speakerMatch[0].length;
+          }
         }
 
         while (segmentStart < segmentEnd && /\s/.test(value[segmentStart])) segmentStart++;
