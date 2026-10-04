@@ -2285,7 +2285,9 @@
             continue;
           }
         }
-        const monoMatch = line.match(/^[\[(](.*?)[\])]$/);
+        // 대괄호 [ ] 는 일반 본문으로 그대로 표시함.
+        // 괄호 ( ) 만 기존 독백 표기로 유지함.
+        const monoMatch = line.match(/^\((.*?)\)$/);
         if (monoMatch) {
           items.push({ type: 'monologue', text: monoMatch[1], textStart: lineStart + 1 });
           continue;
