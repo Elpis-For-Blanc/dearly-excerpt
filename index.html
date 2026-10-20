@@ -2429,13 +2429,14 @@
         return;
       }
       // 대사는 큰따옴표만 감지함: “…” 또는 "…". 작은따옴표는 대사로 처리하지 않음.
+      // 미리보기/PNG에서는 대사로 인식된 여닫는 쌍따옴표를 숨기고 내용만 표시함.
       const regex = /(“[^”]+”|"[^"]+")/g;
       let last = 0;
       let match;
       while ((match = regex.exec(text))) {
         if (match.index > last) target.appendChild(document.createTextNode(text.slice(last, match.index)));
         const span = document.createElement('span');
-        span.textContent = match[0];
+        span.textContent = match[0].slice(1, -1);
         span.style.color = color;
         span.style.fontWeight = '700';
         target.appendChild(span);
@@ -2492,7 +2493,12 @@
 
       const boundaries = new Set([0, value.length]);
       highlightRanges.forEach(range => { boundaries.add(range.start); boundaries.add(range.end); });
-      quoteRanges.forEach(range => { boundaries.add(range.start); boundaries.add(range.end); });
+      quoteRanges.forEach(range => {
+        boundaries.add(range.start);
+        boundaries.add(Math.min(range.end, range.start + 1));
+        boundaries.add(Math.max(range.start, range.end - 1));
+        boundaries.add(range.end);
+      });
       Object.values(localStyles).flat().forEach(range => { boundaries.add(range.start); boundaries.add(range.end); });
 
       const points = [...boundaries]
@@ -2507,6 +2513,12 @@
         const end = points[i + 1];
         if (end <= start) continue;
         const segment = value.slice(start, end);
+        const hiddenQuoteMark = quoteRanges.some(range =>
+          (start === range.start && end === Math.min(range.end, range.start + 1)) ||
+          (start === Math.max(range.start, range.end - 1) && end === range.end)
+        );
+        if (hiddenQuoteMark) continue;
+
         const highlight = highlightRanges.find(range => range.start <= start && range.end >= end);
         const isQuote = activeIn(quoteRanges, start, end);
         const isBold = activeIn(localStyles.bold, start, end);
@@ -2735,7 +2747,8 @@
 
       const ratio = getPortraitRatio();
       const baseHeight = width * ratio.h / ratio.w;
-      const growLimit = Math.max(1, Number(refs.autoGrowLimit?.value || 1.30));
+      const isSquare = refs.sizePreset.value === '1:1';
+      const growLimit = isSquare ? 1 : Math.max(1, Number(refs.autoGrowLimit?.value || 1.30));
       const maxHeight = baseHeight * growLimit;
       const baseFont = Math.max(3, Number(refs.baseFontSize.value || 18));
       const baseLine = Math.max(1, Number(refs.lineHeight.value || 1.8));
@@ -2817,13 +2830,17 @@
 
       const grewPct = Math.max(0, Math.round((cardHeight / baseHeight - 1) * 100));
       if (fallbackScale < 0.999) {
-        refs.fitNote.textContent = `글 전체 표시 우선 · 카드 +${grewPct}% · 본문 ${Math.round(fallbackScale * 100)}%로 최종 맞춤됨.`;
+        refs.fitNote.textContent = isSquare
+          ? `1:1 카드 고정 · 글 전체 표시 위해 본문 ${Math.round(fallbackScale * 100)}%로 최종 맞춤됨.`
+          : `글 전체 표시 우선 · 카드 +${grewPct}% · 본문 ${Math.round(fallbackScale * 100)}%로 최종 맞춤됨.`;
         refs.fitNote.className = 'fit-note tight';
       } else if (font < minFont - 0.01) {
         refs.fitNote.textContent = `글 전체 표시 위해 카드 +${grewPct}% · 본문 ${font.toFixed(1)}px까지 자동 조절됨.`;
         refs.fitNote.className = 'fit-note tight';
       } else if (grew || font < baseFont - 0.01 || padding < requestedPadding || line < baseLine - 0.01) {
-        refs.fitNote.textContent = `카드 ${grewPct ? `최대 +${grewPct}% 확장 · ` : ''}본문 ${font.toFixed(font % 1 ? 1 : 0)}px로 자동 맞춤됨.`;
+        refs.fitNote.textContent = isSquare
+          ? `1:1 카드 고정 · 본문 ${font.toFixed(font % 1 ? 1 : 0)}px로 자동 맞춤됨.`
+          : `카드 ${grewPct ? `최대 +${grewPct}% 확장 · ` : ''}본문 ${font.toFixed(font % 1 ? 1 : 0)}px로 자동 맞춤됨.`;
         refs.fitNote.className = 'fit-note ok';
       } else {
         refs.fitNote.textContent = '설정한 크기로 전체 내용 들어감.';
